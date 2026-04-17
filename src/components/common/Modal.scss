@@ -1,0 +1,74 @@
+@use '../../styles/variables' as v;
+@use '../../styles/mixins' as m;
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  @include m.flex-center;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-content {
+  background-color: var(--bg-secondary);
+  border-radius: 1rem;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-md);
+  animation: slideUp 0.3s ease;
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  @include m.flex-between;
+  
+  h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+  }
+
+  .close-btn {
+    color: var(--text-secondary);
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    @include m.flex-center;
+
+    &:hover {
+      background-color: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+  }
+}
+
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

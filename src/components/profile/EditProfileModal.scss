@@ -1,0 +1,77 @@
+@use '../../styles/variables' as v;
+@use '../../styles/mixins' as m;
+@use 'sass:color';
+
+.edit-profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+
+  input, textarea {
+    padding: 0.6rem 0.8rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.2s ease;
+    resize: vertical;
+
+    &:focus {
+      border-color: v.$primary-color;
+    }
+
+    &.error {
+      border-color: v.$danger-color;
+    }
+  }
+
+  .error-text {
+    font-size: 0.8rem;
+    color: v.$danger-color;
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+
+  button {
+    padding: 0.6rem 1.2rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .btn-cancel {
+    color: var(--text-primary);
+    background-color: var(--bg-tertiary);
+
+    &:hover {
+      background-color: var(--border-color);
+    }
+  }
+
+  .btn-save {
+    background-color: v.$primary-color;
+    color: white;
+
+    &:hover {
+      background-color: color.adjust(#3b82f6, $lightness: -10%);
+    }
+  }
+}

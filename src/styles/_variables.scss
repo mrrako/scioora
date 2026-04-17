@@ -1,0 +1,19 @@
+$primary-color: #6366f1; // indigo-500
+$secondary-color: #a855f7; // purple-500
+$success-color: #22c55e; // green-500
+$danger-color: #ef4444; // red-500
+$warning-color: #f59e0b; // amber-500
+$accent-color: #ec4899; // pink-500
+
+$font-family-base: 'Inter', system-ui, -apple-system, sans-serif;
+
+// Breakpoints
+$bp-sm: 640px;
+$bp-md: 768px;
+$bp-lg: 1024px;
+$bp-xl: 1280px;
+
+// Layout
+$sidebar-width: 250px;
+$sidebar-collapsed-width: 80px;
+$navbar-height: 70px;

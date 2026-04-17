@@ -1,0 +1,217 @@
+@use '../../styles/variables' as v;
+@use '../../styles/mixins' as m;
+@use 'sass:color';
+
+.post-card {
+  background: var(--bg-secondary);
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  margin-bottom: 1.5rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+  }
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.author-info {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+
+  .author-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .author-name {
+    font-weight: 700;
+    color: var(--text-primary);
+    display: inline;
+    margin-right: 0.4rem;
+  }
+
+  .author-username, .post-time {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  .dot-separator {
+    color: var(--text-muted);
+    margin: 0 0.4rem;
+  }
+}
+
+.post-menu-container {
+  position: relative;
+
+  .icon-btn {
+    color: var(--text-secondary);
+    padding: 0.4rem;
+    border-radius: 50%;
+    @include m.flex-center;
+
+    &:hover {
+      background-color: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+  }
+
+  .post-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    box-shadow: var(--shadow-md);
+    padding: 0.5rem;
+    z-index: 10;
+    min-width: 120px;
+    display: flex;
+    flex-direction: column;
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 0.3rem;
+      color: var(--text-primary);
+      text-align: left;
+      font-size: 0.9rem;
+
+      &:hover {
+        background-color: var(--bg-tertiary);
+      }
+
+      &.delete-btn {
+        color: v.$danger-color;
+        &:hover {
+          background-color: rgba(v.$danger-color, 0.1);
+        }
+      }
+    }
+  }
+}
+
+.post-content {
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+  font-size: 1.05rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+
+  .hashtag {
+    color: v.$primary-color;
+    cursor: pointer;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .edit-area {
+    textarea {
+      width: 100%;
+      background-color: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      padding: 0.8rem;
+      color: var(--text-primary);
+      font-family: inherit;
+      resize: vertical;
+      margin-bottom: 0.5rem;
+      outline: none;
+
+      &:focus {
+        border-color: v.$primary-color;
+      }
+    }
+
+    .edit-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+
+      button {
+        padding: 0.4rem 1rem;
+        border-radius: 2rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        background-color: var(--bg-tertiary);
+
+        &:hover {
+          background-color: var(--border-color);
+        }
+
+        &.save-btn {
+          background-color: v.$primary-color;
+          color: white;
+
+          &:hover {
+            background-color: color.adjust(#3b82f6, $lightness: -10%);
+          }
+        }
+      }
+    }
+  }
+}
+
+.post-image {
+  margin-bottom: 1rem;
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+
+  img {
+    width: 100%;
+    height: auto;
+    max-height: 500px;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.post-actions {
+  display: flex;
+  gap: 3rem;
+  border-top: 1px solid var(--border-color);
+  padding-top: 1rem;
+
+  .action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    transition: color 0.2s ease;
+
+    span {
+      font-size: 0.95rem;
+    }
+
+    &:hover {
+      color: v.$primary-color;
+    }
+
+    &.like {
+      &:hover {
+        color: v.$danger-color;
+      }
+      &.active {
+        color: v.$danger-color;
+      }
+    }
+  }
+}

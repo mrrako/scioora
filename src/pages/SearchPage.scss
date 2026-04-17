@@ -1,0 +1,82 @@
+@use '../styles/variables' as v;
+@use '../styles/mixins' as m;
+
+.search-page-layout {
+  display: flex;
+  gap: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.search-results-area {
+  flex: 1;
+  max-width: 600px;
+  min-width: 0;
+}
+
+.results-tabs {
+  display: flex;
+  gap: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1.5rem;
+  
+  button {
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    position: relative;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: var(--text-primary);
+    }
+
+    &.active {
+      color: v.$primary-color;
+      
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background-color: v.$primary-color;
+        border-radius: 3px 3px 0 0;
+      }
+    }
+  }
+}
+
+.no-results-state {
+  padding: 4rem 2rem;
+  text-align: center;
+  background-color: var(--bg-secondary);
+  border-radius: 1rem;
+  border: 1px solid var(--border-color);
+  
+  p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .back-home {
+    color: v.$primary-color;
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.right-sidebar {
+  display: none;
+  
+  @include m.respond-to('lg') {
+    display: block;
+  }
+}

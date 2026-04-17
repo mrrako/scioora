@@ -1,0 +1,58 @@
+@use '../../styles/variables' as v;
+@use '../../styles/mixins' as m;
+@use 'sass:color';
+
+.comment-input-form {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1rem;
+
+  .comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .input-wrapper {
+    flex: 1;
+    display: flex;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 2rem;
+    padding: 0.3rem 0.5rem 0.3rem 1rem;
+    align-items: center;
+
+    input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+
+      &::placeholder {
+        color: var(--text-muted);
+      }
+    }
+
+    button {
+      background-color: transparent;
+      color: v.$primary-color;
+      font-weight: 600;
+      padding: 0.4rem 0.8rem;
+      border-radius: 1.5rem;
+      transition: all 0.2s ease;
+
+      &:hover:not(:disabled) {
+        background-color: rgba(v.$primary-color, 0.1);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+  }
+}

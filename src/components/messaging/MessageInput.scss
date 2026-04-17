@@ -1,0 +1,87 @@
+@use '../../styles/variables' as v;
+@use '../../styles/mixins' as m;
+
+.message-input-container {
+  padding: 1.5rem;
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.input-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+
+  .icon-btn {
+    color: var(--text-muted);
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+  }
+}
+
+.input-wrapper {
+  flex: 1;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 1.5rem;
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    resize: none;
+    max-height: 120px;
+    padding: 0.25rem 0;
+
+    &::placeholder {
+      color: var(--text-muted);
+    }
+  }
+
+  .icon-btn {
+    color: var(--text-muted);
+    padding: 0.25rem;
+
+    &:hover {
+      color: v.$warning-color;
+    }
+  }
+}
+
+.send-btn {
+  background-color: v.$primary-color;
+  color: white;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  @include m.flex-center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+
+  &:hover:not(:disabled) {
+    transform: scale(1.05);
+    background-color: color-mix(in srgb, v.$primary-color, black 10%);
+  }
+
+  &:disabled {
+    background-color: var(--bg-tertiary);
+    color: var(--text-muted);
+    cursor: not-allowed;
+  }
+}

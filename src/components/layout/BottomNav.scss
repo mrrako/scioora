@@ -1,0 +1,35 @@
+@use '../../styles/variables' as v;
+@use '../../styles/mixins' as m;
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 65px;
+  background-color: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--glass-border);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+  padding: 0 1rem;
+
+  @include m.respond-to('md') {
+    display: none;
+  }
+
+  .nav-item {
+    color: var(--text-secondary);
+    padding: 0.5rem;
+    border-radius: 0.75rem;
+    transition: all 0.2s ease;
+
+    &.active {
+      color: v.$primary-color;
+      background-color: rgba(v.$primary-color, 0.1);
+    }
+  }
+}

@@ -1,0 +1,124 @@
+@use '../../styles/variables' as v;
+@use '../../styles/mixins' as m;
+
+.navbar {
+  height: v.$navbar-height;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--glass-border);
+  padding: 0 2rem;
+  @include m.flex-between;
+}
+
+.navbar-search {
+  position: relative;
+  width: 300px;
+
+  .search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+  }
+
+  input {
+    width: 100%;
+    padding: 0.6rem 1rem 0.6rem 2.5rem;
+    border-radius: 2rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.2s ease;
+
+    &:focus {
+      border-color: v.$primary-color;
+    }
+  }
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+
+  .notification-wrapper {
+    position: relative;
+  }
+
+  .icon-btn {
+    position: relative;
+    color: var(--text-secondary);
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    @include m.flex-center;
+
+    &:hover, &.active {
+      background-color: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    .badge {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background-color: v.$danger-color;
+      color: white;
+      font-size: 0.65rem;
+      font-weight: bold;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid var(--bg-secondary);
+      @include m.flex-center;
+    }
+  }
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+    @include m.flex-center;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .user-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+  }
+
+  .logout-btn {
+    color: var(--text-muted);
+    padding: 0.4rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+    @include m.flex-center;
+
+    &:hover {
+      background-color: rgba(v.$danger-color, 0.1);
+      color: v.$danger-color;
+    }
+  }
+}

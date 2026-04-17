@@ -1,0 +1,41 @@
+@use '../styles/variables' as v;
+@use '../styles/mixins' as m;
+
+.dashboard-layout {
+  display: flex;
+  gap: 2.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.main-feed {
+  flex: 1;
+  max-width: 680px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.025em;
+}
+
+.right-sidebar {
+  width: 320px;
+  display: none;
+  position: sticky;
+  top: calc(v.$navbar-height + 2rem);
+  height: fit-content;
+  
+  @include m.respond-to('lg') {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+}

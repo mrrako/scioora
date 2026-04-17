@@ -1,0 +1,84 @@
+@use '../../styles/variables' as v;
+@use '../../styles/mixins' as m;
+
+.top-posts-card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+
+    h4 {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+  }
+}
+
+.posts-table-wrapper {
+  overflow-x: auto;
+}
+
+.posts-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+
+  th {
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+    color: var(--text-primary);
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  .content-cell {
+    max-width: 300px;
+    p {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .stat {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+
+    .icon {
+      &.like { color: v.$danger-color; }
+      &.comment { color: v.$primary-color; }
+    }
+  }
+
+  .engagement-badge {
+    background-color: rgba(v.$primary-color, 0.1);
+    color: v.$primary-color;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+}

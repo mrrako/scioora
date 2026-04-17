@@ -1,0 +1,135 @@
+@use '../../styles/variables' as v;
+@use '../../styles/mixins' as m;
+
+.chat-list {
+  width: 320px;
+  height: 100%;
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-secondary);
+}
+
+.chat-list-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+}
+
+.chat-items {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.chat-item {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  align-items: center;
+  position: relative;
+
+  &:hover {
+    background-color: var(--bg-tertiary);
+  }
+
+  &.active {
+    background-color: rgba(v.$primary-color, 0.08);
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background-color: v.$primary-color;
+    }
+  }
+
+  .avatar-wrapper {
+    position: relative;
+    flex-shrink: 0;
+
+    .chat-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .status-indicator {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid var(--bg-secondary);
+
+      &.online { background-color: v.$success-color; }
+      &.offline { background-color: var(--text-muted); }
+    }
+  }
+
+  .chat-info {
+    flex: 1;
+    min-width: 0;
+
+    .chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.25rem;
+
+      .user-name {
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 0.95rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .timestamp {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+      }
+    }
+
+    .last-message {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  &.unread {
+    .last-message {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+  }
+
+  .unread-badge {
+    position: absolute;
+    right: 1.5rem;
+    bottom: 1rem;
+    background-color: v.$primary-color;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 10px;
+    @include m.flex-center;
+    padding: 0 5px;
+  }
+}

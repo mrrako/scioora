@@ -1,0 +1,103 @@
+@use '../../styles/variables' as v;
+@use '../../styles/mixins' as m;
+@use 'sass:color';
+
+.comment-thread {
+  margin-top: 1rem;
+}
+
+.comment-body {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+
+  .comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-top: 0.2rem;
+  }
+}
+
+.comment-content-wrapper {
+  flex: 1;
+}
+
+.comment-bubble {
+  background-color: var(--bg-tertiary);
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  border-top-left-radius: 0;
+  display: inline-block;
+  min-width: 200px;
+  max-width: 100%;
+
+  .comment-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.2rem;
+
+    .author-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+    }
+
+    .timestamp {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+  }
+
+  .comment-text {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    line-height: 1.4;
+    white-space: pre-wrap;
+  }
+}
+
+.comment-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.25rem;
+  margin-left: 0.5rem;
+
+  .action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    padding: 0.2rem;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: var(--text-primary);
+    }
+
+    &.delete:hover {
+      color: v.$danger-color;
+    }
+  }
+}
+
+.reply-input-container {
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.nested-replies {
+  margin-top: 0.5rem;
+  padding-left: 1rem;
+  border-left: 2px solid var(--border-color);
+  
+  // Decrease avatar size for nested comments
+  .comment-avatar {
+    width: 24px;
+    height: 24px;
+  }
+}

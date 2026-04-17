@@ -1,0 +1,107 @@
+@use '../styles/variables' as v;
+@use '../styles/mixins' as m;
+
+.analytics-page {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.analytics-header {
+  margin-bottom: 2rem;
+
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+
+    .metric-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--glass-border);
+      }
+
+      .icon-wrapper {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        @include m.flex-center;
+        color: white;
+
+        &.like { background-color: v.$danger-color; }
+        &.comment { background-color: v.$primary-color; }
+        &.follower { background-color: v.$success-color; }
+        &.engagement { background-color: v.$warning-color; }
+      }
+
+      .metric-info {
+        display: flex;
+        flex-direction: column;
+
+        .label {
+          font-size: 0.85rem;
+          color: var(--text-muted);
+          font-weight: 500;
+        }
+
+        .value {
+          font-size: 1.5rem;
+          font-weight: 800;
+          color: var(--text-primary);
+        }
+      }
+    }
+  }
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+
+  @include m.respond-to('md') {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chart-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.3s ease;
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+
+    h4 {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+  }
+}
+
+.bottom-section {
+  margin-bottom: 2rem;
+}
