@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -37,9 +38,19 @@ app.use('/api/comments', require('./routes/commentRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/chat', require('./routes/chatRoutes'));
 
-app.get('/', (req, res) => {
-  res.json({ message: 'API is running...' });
-});
+// Serve static files from React build
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../dist')));
+
+  app.get('*', (req, res, next) => {
+    if (req.url.startsWith('/api')) return next();
+    res.sendFile(path.resolve(__dirname, '../dist', 'index.html'));
+  });
+} else {
+  app.get('/', (req, res) => {
+    res.json({ message: 'API is running...' });
+  });
+}
 
 // Error Handling
 app.use(notFound);
