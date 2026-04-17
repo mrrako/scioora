@@ -1,20 +1,21 @@
 import { useState, useMemo } from 'react';
 import { useLocalStorage } from './useLocalStorage';
-import { authService } from '../services/authService';
+import { authService, STORAGE_USERS_KEY, DEMO_USERS } from '../services/authService';
 
 export function useSearch() {
   const [posts] = useLocalStorage('social-dash-posts-v2', []);
+  const [users] = useLocalStorage(STORAGE_USERS_KEY, DEMO_USERS);
   const [query, setQuery] = useState('');
 
   const results = useMemo(() => {
     if (!query.trim()) return { users: [], hashtags: [] };
 
     const normalizedQuery = query.toLowerCase().trim();
-    const allUsers = authService.getUsers();
-
-    const filteredUsers = allUsers.filter(user => 
-      user.name?.toLowerCase().includes(normalizedQuery) || 
-      user.username.toLowerCase().includes(normalizedQuery)
+    
+    // Use the users from state/localStorage dependency
+    const filteredUsers = users.filter(user => 
+      (user.name && user.name.toLowerCase().includes(normalizedQuery)) || 
+      (user.username && user.username.toLowerCase().includes(normalizedQuery))
     );
 
     const hashtagMap = new Set();
@@ -33,7 +34,7 @@ export function useSearch() {
       users: filteredUsers.slice(0, 5),
       hashtags: Array.from(hashtagMap).slice(0, 5),
     };
-  }, [query, posts]);
+  }, [query, posts, users]);
 
   return {
     query,
