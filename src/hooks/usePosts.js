@@ -2,6 +2,15 @@ import { useState, useCallback, useEffect } from 'react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
+export const countComments = (comments) => {
+  if (!comments || !Array.isArray(comments)) return 0;
+  let count = comments.length;
+  for (const comment of comments) {
+    if (comment.replies && Array.isArray(comment.replies)) count += countComments(comment.replies);
+  }
+  return count;
+};
+
 export function usePosts() {
   const { user: currentUser } = useAuth();
   const [posts, setPosts] = useState([]);

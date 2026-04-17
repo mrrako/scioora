@@ -1,27 +1,55 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { TrendingUp, UserPlus } from 'lucide-react';
 import { usePosts } from '../../hooks/usePosts';
 import './TrendingSection.scss';
 
 import { useAuth } from '../../context/AuthContext';
-import { authService } from '../../services/authService';
+import authService from '../../services/authService';
 import { useFollow } from '../../hooks/useFollow';
 import { useNavigate } from 'react-router-dom';
 
 export function TrendingSection() {
   const { user: currentUser } = useAuth();
-  const { getTrendingHashtags } = usePosts();
+  const { posts } = usePosts();
   const { toggleFollow, isFollowing } = useFollow();
   const navigate = useNavigate();
-  const trending = getTrendingHashtags();
+  
+  const [suggestedUsers, setSuggestedUsers] = useState([]);
 
-  const suggestedUsers = React.useMemo(() => {
-    if (!currentUser) return [];
-    const allUsers = authService.getUsers();
-    return allUsers
-      .filter(u => u.id !== currentUser.id && !currentUser.following?.includes(u.id))
-      .slice(0, 3);
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (!currentUser) return;
+      try {
+        const allUsers = await authService.getAllUsers();
+        const suggestions = allUsers
+          .filter(u => u._id !== currentUser._id && !currentUser.following?.includes(u._id))
+          .slice(0, 3);
+        setSuggestedUsers(suggestions);
+      } catch (error) {
+        console.error('Error fetching suggestions:', error);
+      }
+    };
+    fetchSuggestions();
   }, [currentUser]);
+
+  const trending = React.useMemo(() => {
+    const hashtagMap = {};
+    posts.forEach(post => {
+      if (typeof post.content === 'string') {
+        const hashtags = post.content.match(/#[a-zA-Z0-9_]+/g);
+        if (hashtags) {
+          hashtags.forEach(tag => {
+            const normalizedTag = tag.toLowerCase();
+            hashtagMap[normalizedTag] = (hashtagMap[normalizedTag] || 0) + 1;
+          });
+        }
+      }
+    });
+    return Object.entries(hashtagMap)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([tag, count]) => ({ tag, count }));
+  }, [posts]);
 
   return (
     <div className="trending-section">
@@ -57,7 +85,7 @@ export function TrendingSection() {
         <div className="follow-list">
           {suggestedUsers.length > 0 ? (
             suggestedUsers.map(user => (
-              <div key={user.username} className="follow-item">
+              <div key={user._id} className="follow-item">
                 <img 
                   src={user.avatar || `https://ui-avatars.com/api/?name=${user.username}&background=random`} 
                   alt="" 
@@ -70,10 +98,10 @@ export function TrendingSection() {
                   <span className="username">@{user.username}</span>
                 </div>
                 <button 
-                  className={`follow-btn ${isFollowing(user.id) ? 'following' : ''}`}
-                  onClick={() => toggleFollow(user.id)}
+                  className={`follow-btn ${isFollowing(user._id) ? 'following' : ''}`}
+                  onClick={() => toggleFollow(user._id)}
                 >
-                  {isFollowing(user.id) ? 'Following' : 'Follow'}
+                  {isFollowing(user._id) ? 'Following' : 'Follow'}
                 </button>
               </div>
             ))

@@ -1,9 +1,8 @@
 import { useMemo } from 'react';
-import { useLocalStorage } from './useLocalStorage';
-import { countComments } from './usePosts';
+import { usePosts, countComments } from './usePosts';
 
 export function useAnalytics() {
-  const [posts] = useLocalStorage('social-dash-posts-v2', []);
+  const { posts } = usePosts();
 
   const stats = useMemo(() => {
     // 1. Process posts for daily engagement
@@ -22,10 +21,10 @@ export function useAnalytics() {
     let totalComments = 0;
 
     posts.forEach(post => {
-      const date = new Date(post.timestamp);
+      const date = new Date(post.createdAt || post.timestamp);
       const dateStr = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
       
-      const likes = post.likes || 0;
+      const likes = Array.isArray(post.likes) ? post.likes.length : (post.likes || 0);
       const comments = countComments(post.comments || []);
       
       totalLikes += likes;
@@ -37,27 +36,33 @@ export function useAnalytics() {
       }
     });
 
-    // 2. Followers growth (resetted)
+    // 2. Followers growth (mock for now as backend doesn't track history yet)
     const followersData = Object.keys(engagementData).map((date, index) => ({
       name: date,
-      followers: 0
+      followers: index * 2
     }));
 
     // 3. Top performing posts
     const topPosts = [...posts]
       .sort((a, b) => {
-        const engA = (a.likes || 0) + countComments(a.comments || []);
-        const engB = (b.likes || 0) + countComments(b.comments || []);
+        const likesA = Array.isArray(a.likes) ? a.likes.length : (a.likes || 0);
+        const likesB = Array.isArray(b.likes) ? b.likes.length : (b.likes || 0);
+        const engA = likesA + countComments(a.comments || []);
+        const engB = likesB + countComments(b.comments || []);
         return engB - engA;
       })
       .slice(0, 5)
-      .map(p => ({
-        id: p.id,
-        content: p.content,
-        likes: p.likes || 0,
-        comments: countComments(p.comments || []),
-        engagement: (p.likes || 0) + countComments(p.comments || [])
-      }));
+      .map(p => {
+        const likes = Array.isArray(p.likes) ? p.likes.length : (p.likes || 0);
+        const comments = countComments(p.comments || []);
+        return {
+          id: p._id || p.id,
+          content: p.content,
+          likes,
+          comments,
+          engagement: likes + comments
+        };
+      });
 
     return {
       engagementTrend: Object.values(engagementData),
