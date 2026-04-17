@@ -16,20 +16,27 @@
   position: relative;
   background-color: var(--bg-tertiary);
 
-  .edit-cover-btn {
+  .edit-overlay {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background-color: rgba(0, 0, 0, 0.5);
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
     color: white;
-    padding: 0.5rem;
-    border-radius: 50%;
-    backdrop-filter: blur(4px);
-    transition: background-color 0.2s ease;
+    @include m.flex-center;
+    flex-direction: column;
+    gap: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    backdrop-filter: blur(2px);
+    cursor: pointer;
 
-    &:hover {
-      background-color: rgba(0, 0, 0, 0.7);
+    span {
+      font-size: 0.9rem;
+      font-weight: 600;
     }
+  }
+
+  &:hover .edit-overlay {
+    opacity: 1;
   }
 }
 

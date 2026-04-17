@@ -3,22 +3,28 @@ import { MapPin, Link as LinkIcon, Calendar, Edit2 } from 'lucide-react';
 import './ProfileCard.scss';
 
 export function ProfileCard({ profileData, onEditClick, onFollowClick, isFollowing, followLoading, showFollowButton }) {
-  const { name, username, bio, location, website, joinDate, stats, coverPhoto, profilePicture } = profileData;
+  const { name, username, bio, location, website, joinDate, stats, banner, avatar } = profileData;
 
   return (
     <div className="profile-card">
-      <div className="cover-photo" style={{ backgroundImage: `url(${coverPhoto})` }}>
+      <div 
+        className="cover-photo" 
+        style={{ 
+          backgroundImage: `url(${banner || 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80'})` 
+        }}
+      >
         {onEditClick && (
-          <button className="edit-cover-btn" aria-label="Edit Cover Photo">
-            <Edit2 size={16} />
-          </button>
+          <div className="edit-overlay">
+            <Edit2 size={20} />
+            <span>Change Banner</span>
+          </div>
         )}
       </div>
       
       <div className="profile-info-container">
         <div className="profile-header">
           <div className="profile-picture-wrapper">
-            <img src={profilePicture || `https://ui-avatars.com/api/?name=${username}&background=random`} alt={`${name}'s profile`} className="profile-picture" />
+            <img src={avatar || `https://ui-avatars.com/api/?name=${username}&background=random`} alt={`${name}'s profile`} className="profile-picture" />
             {onEditClick && (
               <button className="edit-avatar-btn" aria-label="Edit Profile Picture">
                 <Edit2 size={16} />

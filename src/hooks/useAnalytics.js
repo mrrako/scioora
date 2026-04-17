@@ -3,7 +3,7 @@ import { useLocalStorage } from './useLocalStorage';
 import { countComments } from './usePosts';
 
 export function useAnalytics() {
-  const [posts] = useLocalStorage('social-dash-posts', []);
+  const [posts] = useLocalStorage('social-dash-posts-v2', []);
 
   const stats = useMemo(() => {
     // 1. Process posts for daily engagement
@@ -37,10 +37,10 @@ export function useAnalytics() {
       }
     });
 
-    // 2. Followers growth (simulated)
+    // 2. Followers growth (resetted)
     const followersData = Object.keys(engagementData).map((date, index) => ({
       name: date,
-      followers: 1200 + (index * 45) + Math.floor(Math.random() * 20)
+      followers: 0
     }));
 
     // 3. Top performing posts

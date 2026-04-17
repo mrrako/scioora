@@ -9,12 +9,17 @@ export default function Messages() {
   const { chats, messages, sendMessage, markAsRead } = useMessages();
   const [activeChatId, setActiveChatId] = useState(chats[0]?.id || null);
 
+  React.useEffect(() => {
+    if (activeChatId) {
+      markAsRead(activeChatId);
+    }
+  }, [activeChatId, markAsRead]);
+
   const activeChat = chats.find(c => c.id === activeChatId);
   const activeMessages = activeChatId ? (messages[activeChatId] || []) : [];
 
   const handleSelectChat = (id) => {
     setActiveChatId(id);
-    markAsRead(id);
   };
 
   const handleSendMessage = (text) => {

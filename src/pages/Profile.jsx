@@ -8,11 +8,14 @@ import { EditProfileModal } from '../components/profile/EditProfileModal';
 import { useStories } from '../hooks/useStories';
 import './Profile.scss';
 
+import { usePosts } from '../hooks/usePosts';
+
 export default function Profile() {
   const { username } = useParams();
   const { user: currentUser, refreshUser } = useAuth();
   const { isFollowing, toggleFollow, loading: followLoading } = useFollow();
   const { highlights } = useStories();
+  const { posts: allPosts } = usePosts();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Determine which user profile we are viewing
@@ -23,6 +26,15 @@ export default function Profile() {
     const allUsers = authService.getUsers();
     return allUsers.find(u => u.username === username);
   }, [username, currentUser]);
+
+  // Calculate actual posts for this user
+  const userPostsCount = useMemo(() => {
+    if (!profileUser) return 0;
+    // Note: in a real app, this would be a filtered count from the hook
+    // For now, let's filter the posts we have access to
+    const allStoragePosts = JSON.parse(localStorage.getItem('social-dash-posts-v2') || '[]');
+    return allStoragePosts.filter(p => p.authorId === profileUser.id).length;
+  }, [profileUser]);
 
   const isOwnProfile = !username || (currentUser && username === currentUser.username);
 
@@ -47,7 +59,7 @@ export default function Profile() {
           profileData={{
             ...profileUser,
             stats: {
-              posts: 124, // Mock stats for demo
+              posts: userPostsCount,
               followers: profileUser.followers?.length || 0,
               following: profileUser.following?.length || 0,
             }
@@ -85,6 +97,8 @@ export default function Profile() {
           bio: profileUser.bio,
           location: profileUser.location || '',
           website: profileUser.website || '',
+          avatar: profileUser.avatar,
+          banner: profileUser.banner,
         }}
         onSave={handleSaveProfile}
       />

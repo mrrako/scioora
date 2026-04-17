@@ -1,7 +1,8 @@
-import React, { useState, memo } from 'react';
+import React, { useState, memo, useMemo } from 'react';
 import { MoreHorizontal, Heart, MessageCircle, Share2, Trash2, Edit2 } from 'lucide-react';
 import { CommentSection } from './CommentSection';
 import { countComments } from '../../hooks/usePosts';
+import { authService } from '../../services/authService';
 import './Post.scss';
 
 export const Post = memo(({ post, onDelete, onEdit, onLike, onAddComment, onDeleteComment }) => {
@@ -9,6 +10,13 @@ export const Post = memo(({ post, onDelete, onEdit, onLike, onAddComment, onDele
   const [isEditing, setIsEditing] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
+
+  // Sync author data with latest from authService
+  const authorData = useMemo(() => {
+    const allUsers = authService.getUsers();
+    const latestAuthor = allUsers.find(u => u.id === post.authorId);
+    return latestAuthor || post.author;
+  }, [post.authorId, post.author]);
 
   const formatTimestamp = (isoString) => {
     const date = new Date(isoString);
@@ -44,10 +52,10 @@ export const Post = memo(({ post, onDelete, onEdit, onLike, onAddComment, onDele
     <div className="post-card">
       <div className="post-header">
         <div className="author-info">
-          <img src={post.author.avatar} alt={post.author.name} className="author-avatar" />
+          <img src={authorData.avatar || `https://ui-avatars.com/api/?name=${authorData.username}&background=random`} alt={authorData.name} className="author-avatar" />
           <div>
-            <h4 className="author-name">{post.author.name}</h4>
-            <span className="author-username">@{post.author.username}</span>
+            <h4 className="author-name">{authorData.name}</h4>
+            <span className="author-username">@{authorData.username}</span>
             <span className="dot-separator">·</span>
             <span className="post-time">{formatTimestamp(post.timestamp)}</span>
           </div>

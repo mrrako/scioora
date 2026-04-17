@@ -3,15 +3,25 @@ import { TrendingUp, UserPlus } from 'lucide-react';
 import { usePosts } from '../../hooks/usePosts';
 import './TrendingSection.scss';
 
+import { useAuth } from '../../context/AuthContext';
+import { authService } from '../../services/authService';
+import { useFollow } from '../../hooks/useFollow';
+import { useNavigate } from 'react-router-dom';
+
 export function TrendingSection() {
+  const { user: currentUser } = useAuth();
   const { getTrendingHashtags } = usePosts();
+  const { toggleFollow, isFollowing } = useFollow();
+  const navigate = useNavigate();
   const trending = getTrendingHashtags();
 
-  const suggestedUsers = [
-    { name: 'Sarah Williams', username: 'sarahw', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80' },
-    { name: 'Mike Ross', username: 'miker', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80' },
-    { name: 'Harvey Specter', username: 'harvey', avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80' },
-  ];
+  const suggestedUsers = React.useMemo(() => {
+    if (!currentUser) return [];
+    const allUsers = authService.getUsers();
+    return allUsers
+      .filter(u => u.id !== currentUser.id && !currentUser.following?.includes(u.id))
+      .slice(0, 3);
+  }, [currentUser]);
 
   return (
     <div className="trending-section">
@@ -23,7 +33,12 @@ export function TrendingSection() {
         <div className="trending-list">
           {trending.length > 0 ? (
             trending.map(({ tag, count }) => (
-              <div key={tag} className="trending-item">
+              <div 
+                key={tag} 
+                className="trending-item"
+                onClick={() => navigate(`/search?q=${encodeURIComponent(tag)}`)}
+                style={{ cursor: 'pointer' }}
+              >
                 <span className="tag-name">{tag}</span>
                 <span className="tag-count">{count} {count === 1 ? 'post' : 'posts'}</span>
               </div>
@@ -40,16 +55,31 @@ export function TrendingSection() {
           <h4>Who to follow</h4>
         </div>
         <div className="follow-list">
-          {suggestedUsers.map(user => (
-            <div key={user.username} className="follow-item">
-              <img src={user.avatar} alt="" className="user-avatar" />
-              <div className="user-info">
-                <span className="name">{user.name}</span>
-                <span className="username">@{user.username}</span>
+          {suggestedUsers.length > 0 ? (
+            suggestedUsers.map(user => (
+              <div key={user.username} className="follow-item">
+                <img 
+                  src={user.avatar || `https://ui-avatars.com/api/?name=${user.username}&background=random`} 
+                  alt="" 
+                  className="user-avatar" 
+                  onClick={() => navigate(`/profile/${user.username}`)}
+                  style={{ cursor: 'pointer' }}
+                />
+                <div className="user-info" onClick={() => navigate(`/profile/${user.username}`)} style={{ cursor: 'pointer' }}>
+                  <span className="name">{user.name}</span>
+                  <span className="username">@{user.username}</span>
+                </div>
+                <button 
+                  className={`follow-btn ${isFollowing(user.id) ? 'following' : ''}`}
+                  onClick={() => toggleFollow(user.id)}
+                >
+                  {isFollowing(user.id) ? 'Following' : 'Follow'}
+                </button>
               </div>
-              <button className="follow-btn">Follow</button>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p className="empty-msg">No suggestions available</p>
+          )}
         </div>
       </div>
 

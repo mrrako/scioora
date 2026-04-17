@@ -13,7 +13,7 @@ export function useMessages() {
   const { user: currentUser } = useAuth();
   
   // Shared global messages and chats state
-  const [allMessages, setAllMessages] = useLocalStorage('social-dash-global-messages', {});
+  const [allMessages, setAllMessages] = useLocalStorage('social-dash-global-messages-v2', {});
 
   // Data Migration: Convert old 'me' senderId to actual userId
   useEffect(() => {
@@ -47,6 +47,9 @@ export function useMessages() {
         const chatId = getChatId(currentUser.id, user.id);
         const chatMessages = allMessages[chatId] || [];
         const lastMsg = chatMessages[chatMessages.length - 1];
+        
+        // Calculate unread count (messages NOT from me and NOT read)
+        const unreadCount = chatMessages.filter(m => m.senderId !== currentUser.id && !m.isRead).length;
 
         return {
           id: chatId,
@@ -58,7 +61,7 @@ export function useMessages() {
           },
           lastMessage: lastMsg ? lastMsg.text : 'No messages yet',
           timestamp: lastMsg ? lastMsg.timestamp : new Date(Date.now() - (index + 1) * 3600000).toISOString(),
-          unreadCount: 0,
+          unreadCount,
         };
       })
       .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -72,6 +75,7 @@ export function useMessages() {
       senderId: currentUser.id,
       text,
       timestamp: new Date().toISOString(),
+      isRead: false,
     };
 
     setAllMessages((prev) => ({
@@ -81,13 +85,28 @@ export function useMessages() {
   }, [currentUser, setAllMessages]);
 
   const markAsRead = useCallback((chatId) => {
-    // Unread logic
-  }, []);
+    if (!currentUser || !allMessages[chatId]) return;
+    
+    const hasUnread = allMessages[chatId].some(m => m.senderId !== currentUser.id && !m.isRead);
+    if (!hasUnread) return;
+
+    setAllMessages((prev) => ({
+      ...prev,
+      [chatId]: prev[chatId].map(msg => 
+        msg.senderId !== currentUser.id ? { ...msg, isRead: true } : msg
+      ),
+    }));
+  }, [currentUser, allMessages, setAllMessages]);
+
+  const totalUnreadCount = useMemo(() => {
+    return chats.reduce((acc, chat) => acc + chat.unreadCount, 0);
+  }, [chats]);
 
   return {
     chats,
     messages: allMessages,
     sendMessage,
     markAsRead,
+    totalUnreadCount
   };
 }

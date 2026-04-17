@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search as SearchIcon, Bell, Sun, Moon, User } from 'lucide-react';
+import { Search as SearchIcon, Bell, Sun, Moon, User, MessageSquare, LogOut } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useNotifications } from '../../hooks/useNotifications';
+import { useMessages } from '../../hooks/useMessages';
 import { useSearch } from '../../hooks/useSearch';
 import { NotificationDropdown } from './NotificationDropdown';
 import { SearchResultsDropdown } from '../search/SearchResultsDropdown';
-import { LogOut } from 'lucide-react';
 import './Navbar.scss';
 
 export function Navbar() {
@@ -14,12 +15,13 @@ export function Navbar() {
   const { user, logout } = useAuth();
   const { 
     notifications, 
-    unreadCount, 
-    markAsRead, 
+    unreadCount: notifUnreadCount, 
+    markAsRead: markNotifAsRead, 
     markAllAsRead, 
     clearAll 
   } = useNotifications();
   
+  const { totalUnreadCount: messageUnreadCount } = useMessages();
   const { query, setQuery, results } = useSearch();
   
   const [showNotifications, setShowNotifications] = useState(false);
@@ -80,6 +82,11 @@ export function Navbar() {
         <button className="icon-btn" onClick={toggleTheme} aria-label="Toggle Theme">
           {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
         </button>
+
+        <Link to="/messages" className="icon-btn message-btn" aria-label="Messages">
+          <MessageSquare size={20} />
+          {messageUnreadCount > 0 && <span className="badge message-badge">{messageUnreadCount}</span>}
+        </Link>
         
         <div className="notification-wrapper" ref={notificationRef}>
           <button 
@@ -88,13 +95,13 @@ export function Navbar() {
             aria-label="Notifications"
           >
             <Bell size={20} />
-            {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
+            {notifUnreadCount > 0 && <span className="badge">{notifUnreadCount}</span>}
           </button>
 
           {showNotifications && (
             <NotificationDropdown 
               notifications={notifications}
-              onMarkAsRead={markAsRead}
+              onMarkAsRead={markNotifAsRead}
               onMarkAllAsRead={markAllAsRead}
               onClearAll={clearAll}
             />
@@ -102,9 +109,9 @@ export function Navbar() {
         </div>
 
         <div className="user-profile">
-          <div className="avatar">
+          <Link to={`/profile/${user?.username}`} className="avatar">
             <img src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.username}&background=random`} alt="" />
-          </div>
+          </Link>
           <span className="user-name">{user?.username}</span>
           <button className="logout-btn" onClick={logout} title="Logout">
             <LogOut size={18} />

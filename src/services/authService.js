@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 
-const STORAGE_USERS_KEY = 'social-dash-users';
-const STORAGE_CURRENT_USER_KEY = 'social-dash-current-user';
+const STORAGE_USERS_KEY = 'social-dash-users-v2';
+const STORAGE_CURRENT_USER_KEY = 'social-dash-current-user-v2';
 
 const DEMO_USERS = [
   {

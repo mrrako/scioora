@@ -4,32 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '../context/AuthContext';
 
 const generateMockPosts = () => {
-  const posts = [];
-  const authors = [
-    { id: 'u-1', name: 'Jane Doe', username: 'jane_doe', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80' },
-    { id: 'u-2', name: 'Alex Johnson', username: 'alex_johnson', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80' },
-    { id: 'u-3', name: 'Maya Sky', username: 'maya_sky', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80' }
-  ];
-
-  for (let i = 1; i <= 30; i++) {
-    const author = authors[i % authors.length];
-    posts.push({
-      id: `mock-post-${i}`,
-      authorId: author.id,
-      author: {
-        name: author.name,
-        username: author.username,
-        avatar: author.avatar,
-      },
-      content: `This is mock post #${i} from ${author.name}! #testing #react #social`,
-      image: i % 7 === 0 ? 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80' : null,
-      timestamp: new Date(Date.now() - i * 3600000).toISOString(),
-      likes: Math.floor(Math.random() * 100),
-      comments: [],
-      isLiked: false,
-    });
-  }
-  return posts;
+  return [];
 };
 
 const PAGE_SIZE = 5;
@@ -61,7 +36,7 @@ export const countComments = (comments) => {
 
 export function usePosts() {
   const { user: currentUser } = useAuth();
-  const [allPosts, setAllPosts] = useLocalStorage('social-dash-posts', generateMockPosts());
+  const [allPosts, setAllPosts] = useLocalStorage('social-dash-posts-v2', generateMockPosts());
 
   // Data Migration/Cleanup: Fix any "broken" posts from previous sessions
   useEffect(() => {

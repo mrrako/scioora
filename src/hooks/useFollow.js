@@ -34,13 +34,13 @@ export function useFollow() {
       addNotification({
         type: 'follow',
         userId: targetUserId,
-        sender: {
+        user: {
           id: currentUser.id,
           name: currentUser.username,
           avatar: currentUser.avatar,
         },
         content: 'started following you',
-        read: false,
+        isRead: false,
         timestamp: new Date().toISOString(),
       });
 
