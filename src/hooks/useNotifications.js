@@ -1,44 +1,60 @@
-import { useState, useCallback } from 'react';
-import { useLocalStorage } from './useLocalStorage';
-import { v4 as uuidv4 } from 'uuid';
-
-const INITIAL_NOTIFICATIONS = [];
+import { useState, useCallback, useEffect } from 'react';
+import api from '../services/api';
 
 export function useNotifications() {
-  const [notifications, setNotifications] = useLocalStorage('social-dash-notifications-v2', INITIAL_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const addNotification = useCallback((notification) => {
-    const newNotif = {
-      id: uuidv4(),
-      timestamp: new Date().toISOString(),
-      isRead: false,
-      ...notification,
-    };
-    setNotifications((prev) => [newNotif, ...prev]);
-  }, [setNotifications]);
+  const fetchNotifications = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await api.get('/notifications');
+      if (response.success) {
+        setNotifications(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const markAsRead = useCallback((id) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
-    );
-  }, [setNotifications]);
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
 
-  const markAllAsRead = useCallback(() => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-  }, [setNotifications]);
+  const markAsRead = async (id) => {
+    try {
+      const response = await api.put(`/notifications/${id}/read`);
+      if (response.success) {
+        setNotifications((prev) =>
+          prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
+        );
+      }
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
 
-  const clearAll = useCallback(() => {
-    setNotifications([]);
-  }, [setNotifications]);
+  const markAllAsRead = async () => {
+    try {
+      const response = await api.put('/notifications/read-all');
+      if (response.success) {
+        setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      }
+    } catch (error) {
+      console.error('Error marking all as read:', error);
+    }
+  };
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return {
     notifications,
     unreadCount,
-    addNotification,
+    loading,
     markAsRead,
     markAllAsRead,
-    clearAll,
+    refreshNotifications: fetchNotifications,
   };
 }

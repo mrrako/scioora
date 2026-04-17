@@ -4,7 +4,7 @@ import { Trash2, CornerDownRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import './Comment.scss';
 
-export function Comment({ comment, postId, onAddComment, onDeleteComment, depth = 0 }) {
+export function Comment({ comment, postId, onReply, onDelete, depth = 0 }) {
   const { user: currentUser } = useAuth();
   const [showReplyInput, setShowReplyInput] = useState(false);
 
@@ -14,25 +14,26 @@ export function Comment({ comment, postId, onAddComment, onDeleteComment, depth 
   };
 
   const handleReplySubmit = (text) => {
-    const author = {
-      name: currentUser?.name || currentUser?.username || 'Unknown User',
-      username: currentUser?.username || 'unknown',
-      avatar: currentUser?.avatar || `https://ui-avatars.com/api/?name=${currentUser?.username || 'User'}&background=random`,
-    };
-    onAddComment(postId, comment.id, text, author);
+    onReply(text, comment._id);
     setShowReplyInput(false);
   };
+
+  const isOwner = currentUser?._id === comment.user?._id;
 
   return (
     <div className={`comment-thread depth-${depth}`}>
       <div className="comment-body">
-        <img src={comment.author.avatar} alt={comment.author.name} className="comment-avatar" />
+        <img 
+          src={comment.user?.avatar || `https://ui-avatars.com/api/?name=${comment.user?.username}&background=random`} 
+          alt={comment.user?.name} 
+          className="comment-avatar" 
+        />
         
         <div className="comment-content-wrapper">
           <div className="comment-bubble">
             <div className="comment-header">
-              <span className="author-name">{comment.author.name}</span>
-              <span className="timestamp">{formatTimestamp(comment.timestamp)}</span>
+              <span className="author-name">{comment.user?.name}</span>
+              <span className="timestamp">{formatTimestamp(comment.createdAt)}</span>
             </div>
             <p className="comment-text">{comment.text}</p>
           </div>
@@ -41,9 +42,11 @@ export function Comment({ comment, postId, onAddComment, onDeleteComment, depth 
             <button className="action-btn reply" onClick={() => setShowReplyInput(!showReplyInput)}>
               <CornerDownRight size={14} /> Reply
             </button>
-            <button className="action-btn delete" onClick={() => onDeleteComment(postId, comment.id)}>
-              <Trash2 size={14} /> Delete
-            </button>
+            {isOwner && (
+              <button className="action-btn delete" onClick={() => onDelete(comment._id)}>
+                <Trash2 size={14} /> Delete
+              </button>
+            )}
           </div>
 
           {showReplyInput && (
@@ -56,11 +59,11 @@ export function Comment({ comment, postId, onAddComment, onDeleteComment, depth 
             <div className="nested-replies">
               {comment.replies.map(reply => (
                 <Comment 
-                  key={reply.id} 
+                  key={reply._id} 
                   comment={reply} 
                   postId={postId}
-                  onAddComment={onAddComment}
-                  onDeleteComment={onDeleteComment}
+                  onReply={onReply}
+                  onDelete={onDelete}
                   depth={depth + 1}
                 />
               ))}

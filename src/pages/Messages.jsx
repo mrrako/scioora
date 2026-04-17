@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChatList } from '../components/messaging/ChatList';
 import { ChatWindow } from '../components/messaging/ChatWindow';
 import { MessageInput } from '../components/messaging/MessageInput';
@@ -6,25 +6,32 @@ import { useMessages } from '../hooks/useMessages';
 import './Messages.scss';
 
 export default function Messages() {
-  const { chats, messages, sendMessage, markAsRead } = useMessages();
-  const [activeChatId, setActiveChatId] = useState(chats[0]?.id || null);
+  const { chats, messages, sendMessage, fetchMessages, activeChatId } = useMessages();
+  const [selectedChatId, setSelectedChatId] = useState(null);
 
-  React.useEffect(() => {
-    if (activeChatId) {
-      markAsRead(activeChatId);
+  // If chats load and none selected, optionally select the first
+  useEffect(() => {
+    if (chats.length > 0 && !selectedChatId) {
+      setSelectedChatId(chats[0].id);
     }
-  }, [activeChatId, markAsRead]);
+  }, [chats, selectedChatId]);
 
-  const activeChat = chats.find(c => c.id === activeChatId);
-  const activeMessages = activeChatId ? (messages[activeChatId] || []) : [];
+  // When a chat is selected, fetch its messages
+  useEffect(() => {
+    if (selectedChatId) {
+      fetchMessages(selectedChatId);
+    }
+  }, [selectedChatId, fetchMessages]);
+
+  const activeChat = chats.find(c => c.id === selectedChatId);
 
   const handleSelectChat = (id) => {
-    setActiveChatId(id);
+    setSelectedChatId(id);
   };
 
   const handleSendMessage = (text) => {
-    if (activeChatId) {
-      sendMessage(activeChatId, text);
+    if (selectedChatId) {
+      sendMessage(selectedChatId, text);
     }
   };
 
@@ -33,16 +40,16 @@ export default function Messages() {
       <div className="messages-container">
         <ChatList 
           chats={chats} 
-          activeChatId={activeChatId} 
+          activeChatId={selectedChatId} 
           onSelectChat={handleSelectChat} 
         />
         <div className="chat-area">
           <ChatWindow 
             chat={activeChat} 
-            messages={activeMessages} 
+            messages={messages} 
             isTyping={false}
           />
-          {activeChatId && (
+          {selectedChatId && (
             <MessageInput onSendMessage={handleSendMessage} />
           )}
         </div>

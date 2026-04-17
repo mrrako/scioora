@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { UserPlus, User, Lock, AlertCircle, CheckCircle } from 'lucide-react';
+import { UserPlus, User, Lock, AlertCircle, CheckCircle, Mail, Info } from 'lucide-react';
 import './AuthPages.scss';
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
+    name: '',
     username: '',
+    email: '',
     password: '',
     confirmPassword: '',
   });
@@ -20,8 +22,16 @@ export default function SignupPage() {
   };
 
   const validate = () => {
+    if (formData.name.trim().length === 0) {
+      setError('Full name is required.');
+      return false;
+    }
     if (formData.username.length < 3) {
       setError('Username must be at least 3 characters long.');
+      return false;
+    }
+    if (!formData.email.includes('@')) {
+      setError('Please provide a valid email.');
       return false;
     }
     if (formData.password.length < 6) {
@@ -44,15 +54,19 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      const result = signup({
+      const result = await signup({
+        name: formData.name,
         username: formData.username,
+        email: formData.email,
         password: formData.password,
       });
       
       if (result.success) {
         navigate('/');
       } else {
-        setError(result.message);
+        // Handle array of errors from express-validator or single message
+        const message = result.errors ? result.errors[0].msg : result.message;
+        setError(message || 'Registration failed');
       }
     } catch (err) {
       setError('Registration failed. Please try again.');
@@ -81,6 +95,21 @@ export default function SignupPage() {
           )}
 
           <div className="input-group">
+            <label htmlFor="name">
+              <Info size={18} />
+              Full Name
+            </label>
+            <input
+              id="name"
+              type="text"
+              placeholder="Enter your full name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="input-group">
             <label htmlFor="username">
               <User size={18} />
               Username
@@ -90,6 +119,21 @@ export default function SignupPage() {
               type="text"
               placeholder="Pick a unique username"
               value={formData.username}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="email">
+              <Mail size={18} />
+              Email Address
+            </label>
+            <input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              value={formData.email}
               onChange={handleChange}
               required
             />

@@ -23,6 +23,7 @@ export function ChatWindow({ chat, messages, isTyping }) {
   }
 
   const formatTime = (isoString) => {
+    if (!isoString) return '';
     return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
@@ -30,10 +31,14 @@ export function ChatWindow({ chat, messages, isTyping }) {
     <div className="chat-window">
       <div className="chat-window-header">
         <div className="user-info">
-          <img src={chat.user.avatar} alt={chat.user.name} className="chat-avatar" />
+          <img 
+            src={chat.user?.avatar || `https://ui-avatars.com/api/?name=${chat.user?.username}&background=random`} 
+            alt={chat.user?.name} 
+            className="chat-avatar" 
+          />
           <div>
-            <h4>{chat.user.name}</h4>
-            <span className={`status ${chat.user.status}`}>{chat.user.status}</span>
+            <h4>{chat.user?.name}</h4>
+            <span className={`status ${chat.user?.status || 'offline'}`}>{chat.user?.status || 'offline'}</span>
           </div>
         </div>
         <div className="header-actions">
@@ -44,21 +49,34 @@ export function ChatWindow({ chat, messages, isTyping }) {
       </div>
 
       <div className="chat-messages" ref={scrollRef}>
-        {messages.map((msg) => {
-          const isMe = msg.senderId === currentUser?.id;
+        {messages && messages.map((msg) => {
+          // Backend returns msg.sender as an object (populated) or an ID string
+          const senderId = msg.sender?._id || msg.sender;
+          const isMe = senderId === currentUser?._id;
+
           return (
-            <div key={msg.id} className={`message-wrapper ${isMe ? 'sent' : 'received'}`}>
-              {!isMe && <img src={chat.user.avatar} alt="" className="message-avatar" />}
+            <div key={msg._id || Math.random().toString()} className={`message-wrapper ${isMe ? 'sent' : 'received'}`}>
+              {!isMe && (
+                <img 
+                  src={chat.user?.avatar || `https://ui-avatars.com/api/?name=${chat.user?.username}&background=random`} 
+                  alt="" 
+                  className="message-avatar" 
+                />
+              )}
               <div className="message-bubble">
                 <p>{msg.text}</p>
-                <span className="timestamp">{formatTime(msg.timestamp)}</span>
+                <span className="timestamp">{formatTime(msg.createdAt)}</span>
               </div>
             </div>
           );
         })}
         {isTyping && (
           <div className="message-wrapper received">
-            <img src={chat.user.avatar} alt="" className="message-avatar" />
+            <img 
+              src={chat.user?.avatar || `https://ui-avatars.com/api/?name=${chat.user?.username}&background=random`} 
+              alt="" 
+              className="message-avatar" 
+            />
             <div className="message-bubble typing">
               <div className="typing-dots">
                 <span></span><span></span><span></span>

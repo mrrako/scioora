@@ -35,31 +35,32 @@ export function NotificationDropdown({ notifications, onMarkAsRead, onMarkAllAsR
           <button className="action-btn" onClick={onMarkAllAsRead} title="Mark all as read">
             <Check size={18} />
           </button>
-          <button className="action-btn delete" onClick={onClearAll} title="Clear all">
-            <Trash2 size={18} />
-          </button>
         </div>
       </div>
 
       <div className="notification-list">
-        {notifications.length > 0 ? (
+        {notifications && notifications.length > 0 ? (
           notifications.map((notif) => (
             <div 
-              key={notif.id} 
+              key={notif._id} 
               className={`notification-item ${!notif.isRead ? 'unread' : ''}`}
-              onClick={() => onMarkAsRead(notif.id)}
+              onClick={() => onMarkAsRead(notif._id)}
             >
               <div className="avatar-container">
-                <img src={notif.user.avatar} alt={notif.user.name} className="user-avatar" />
+                <img 
+                  src={notif.sender?.avatar || `https://ui-avatars.com/api/?name=${notif.sender?.username}&background=random`} 
+                  alt={notif.sender?.name} 
+                  className="user-avatar" 
+                />
                 <div className="icon-overlay">
                   {getIcon(notif.type)}
                 </div>
               </div>
               <div className="notification-content">
                 <p>
-                  <strong>{notif.user.name}</strong> {notif.content}
+                  <strong>{notif.sender?.name}</strong> {notif.message}
                 </p>
-                <span className="timestamp">{formatTimestamp(notif.timestamp)}</span>
+                <span className="timestamp">{formatTimestamp(notif.createdAt)}</span>
               </div>
               {!notif.isRead && <div className="unread-dot" />}
             </div>
@@ -71,7 +72,7 @@ export function NotificationDropdown({ notifications, onMarkAsRead, onMarkAllAsR
         )}
       </div>
 
-      {notifications.length > 0 && (
+      {notifications && notifications.length > 0 && (
         <div className="dropdown-footer">
           <button>View all notifications</button>
         </div>

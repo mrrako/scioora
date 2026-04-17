@@ -1,47 +1,73 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { authService } from '../services/authService';
+import authService from '../services/authService';
+import api from '../services/api';
 import { useFollow } from '../hooks/useFollow';
 import { ProfileCard } from '../components/profile/ProfileCard';
 import { EditProfileModal } from '../components/profile/EditProfileModal';
 import { useStories } from '../hooks/useStories';
+import { PostList } from '../components/posts/PostList';
+import { usePosts } from '../hooks/usePosts'; // needed for some base functions if PostList expects them
 import './Profile.scss';
-
-import { usePosts } from '../hooks/usePosts';
 
 export default function Profile() {
   const { username } = useParams();
   const { user: currentUser, refreshUser } = useAuth();
   const { isFollowing, toggleFollow, loading: followLoading } = useFollow();
   const { highlights } = useStories();
-  const { posts: allPosts } = usePosts();
+  const { deletePost, editPost, toggleLike, addComment, deleteComment } = usePosts();
+
+  const [profileUser, setProfileUser] = useState(null);
+  const [userPosts, setUserPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  // Determine which user profile we are viewing
-  const profileUser = useMemo(() => {
-    if (!username || (currentUser && username === currentUser.username)) {
-      return currentUser;
+  // Determine which username to fetch
+  const targetUsername = username || currentUser?.username;
+  const isOwnProfile = currentUser && targetUsername === currentUser.username;
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      setLoading(true);
+      try {
+        if (!targetUsername) return;
+        
+        // Fetch User Profile
+        const userData = await authService.getUserProfile(targetUsername);
+        setProfileUser(userData);
+
+        // Fetch User Posts
+        const postsResponse = await api.get(`/posts/user/${userData._id}`);
+        if (postsResponse.success) {
+          setUserPosts(postsResponse.data);
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+        setProfileUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfileData();
+  }, [targetUsername]);
+
+  const handleSaveProfile = async (updatedData) => {
+    try {
+      await authService.updateProfile(updatedData);
+      refreshUser();
+      // Optimistically update local state
+      setProfileUser(prev => ({ ...prev, ...updatedData }));
+      setIsEditModalOpen(false);
+    } catch (err) {
+      console.error('Failed to update profile', err);
     }
-    const allUsers = authService.getUsers();
-    return allUsers.find(u => u.username === username);
-  }, [username, currentUser]);
-
-  // Calculate actual posts for this user
-  const userPostsCount = useMemo(() => {
-    if (!profileUser) return 0;
-    // Note: in a real app, this would be a filtered count from the hook
-    // For now, let's filter the posts we have access to
-    const allStoragePosts = JSON.parse(localStorage.getItem('social-dash-posts-v2') || '[]');
-    return allStoragePosts.filter(p => p.authorId === profileUser.id).length;
-  }, [profileUser]);
-
-  const isOwnProfile = !username || (currentUser && username === currentUser.username);
-
-  const handleSaveProfile = (updatedData) => {
-    authService.updateUser(currentUser.id, updatedData);
-    refreshUser();
   };
+
+  if (loading) {
+    return <div className="profile-page loading"><p>Loading profile...</p></div>;
+  }
 
   if (!profileUser) {
     return (
@@ -59,19 +85,19 @@ export default function Profile() {
           profileData={{
             ...profileUser,
             stats: {
-              posts: userPostsCount,
+              posts: userPosts.length,
               followers: profileUser.followers?.length || 0,
               following: profileUser.following?.length || 0,
             }
           }} 
           onEditClick={isOwnProfile ? () => setIsEditModalOpen(true) : null}
-          isFollowing={isFollowing(profileUser.id)}
-          onFollowClick={() => toggleFollow(profileUser.id)}
+          isFollowing={isFollowing(profileUser._id)}
+          onFollowClick={() => toggleFollow(profileUser._id)}
           followLoading={followLoading}
           showFollowButton={!isOwnProfile}
         />
         
-        {highlights.length > 0 && isOwnProfile && (
+        {highlights && highlights.length > 0 && isOwnProfile && (
           <div className="highlights-section">
             <h3>Highlights</h3>
             <div className="highlights-list">
@@ -86,22 +112,36 @@ export default function Profile() {
             </div>
           </div>
         )}
+
+        <div className="profile-posts-section">
+          <h3>Posts</h3>
+          <PostList 
+            posts={userPosts}
+            onDeletePost={deletePost}
+            onEditPost={editPost}
+            onLikePost={toggleLike}
+            onAddComment={addComment}
+            onDeleteComment={deleteComment}
+          />
+        </div>
       </div>
 
-      <EditProfileModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        initialData={{
-          name: profileUser.name || profileUser.username,
-          username: profileUser.username,
-          bio: profileUser.bio,
-          location: profileUser.location || '',
-          website: profileUser.website || '',
-          avatar: profileUser.avatar,
-          banner: profileUser.banner,
-        }}
-        onSave={handleSaveProfile}
-      />
+      {isOwnProfile && (
+        <EditProfileModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          initialData={{
+            name: profileUser.name || profileUser.username,
+            username: profileUser.username,
+            bio: profileUser.bio || '',
+            location: profileUser.location || '',
+            website: profileUser.website || '',
+            avatar: profileUser.avatar,
+            banner: profileUser.banner,
+          }}
+          onSave={handleSaveProfile}
+        />
+      )}
     </div>
   );
 }

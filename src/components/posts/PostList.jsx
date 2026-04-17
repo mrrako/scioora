@@ -73,7 +73,7 @@ export function PostList({
     >
       <AnimatePresence mode="popLayout">
         {posts.map((post) => (
-          <motion.div key={post.id} variants={itemVariants} layout>
+          <motion.div key={post._id || Math.random()} variants={itemVariants} layout>
             <Post 
               post={post} 
               onDelete={onDeletePost}

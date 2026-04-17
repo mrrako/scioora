@@ -1,22 +1,17 @@
-import React, { useState, memo, useMemo } from 'react';
+import React, { useState, memo } from 'react';
 import { MoreHorizontal, Heart, MessageCircle, Share2, Trash2, Edit2 } from 'lucide-react';
 import { CommentSection } from './CommentSection';
-import { countComments } from '../../hooks/usePosts';
-import { authService } from '../../services/authService';
+import { useAuth } from '../../context/AuthContext';
 import './Post.scss';
 
 export const Post = memo(({ post, onDelete, onEdit, onLike, onAddComment, onDeleteComment }) => {
+  const { user: currentUser } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
 
-  // Sync author data with latest from authService
-  const authorData = useMemo(() => {
-    const allUsers = authService.getUsers();
-    const latestAuthor = allUsers.find(u => u.id === post.authorId);
-    return latestAuthor || post.author;
-  }, [post.authorId, post.author]);
+  const authorData = post.user;
 
   const formatTimestamp = (isoString) => {
     const date = new Date(isoString);
@@ -24,13 +19,7 @@ export const Post = memo(({ post, onDelete, onEdit, onLike, onAddComment, onDele
   };
 
   const renderContentWithHashtags = (text) => {
-    if (typeof text !== 'string') {
-      // Handle the case where text is an object (corrupted post data)
-      if (text && typeof text === 'object') {
-        return text.content || 'Content unavailable';
-      }
-      return String(text);
-    }
+    if (typeof text !== 'string') return text;
     const regex = /(#[a-zA-Z0-9_]+)/g;
     const parts = text.split(regex);
     return parts.map((part, index) => {
@@ -42,41 +31,44 @@ export const Post = memo(({ post, onDelete, onEdit, onLike, onAddComment, onDele
   };
 
   const handleSaveEdit = () => {
-    onEdit(post.id, editContent, post.image);
+    onEdit(post._id, editContent, post.image);
     setIsEditing(false);
   };
 
-  const totalComments = Array.isArray(post.comments) ? countComments(post.comments) : post.comments;
+  const isLiked = post.likes.includes(currentUser?._id);
+  const isOwner = currentUser?._id === authorData?._id;
 
   return (
     <div className="post-card">
       <div className="post-header">
         <div className="author-info">
-          <img src={authorData.avatar || `https://ui-avatars.com/api/?name=${authorData.username}&background=random`} alt={authorData.name} className="author-avatar" />
+          <img src={authorData?.avatar || `https://ui-avatars.com/api/?name=${authorData?.username}&background=random`} alt={authorData?.name} className="author-avatar" />
           <div>
-            <h4 className="author-name">{authorData.name}</h4>
-            <span className="author-username">@{authorData.username}</span>
+            <h4 className="author-name">{authorData?.name}</h4>
+            <span className="author-username">@{authorData?.username}</span>
             <span className="dot-separator">·</span>
-            <span className="post-time">{formatTimestamp(post.timestamp)}</span>
+            <span className="post-time">{formatTimestamp(post.createdAt)}</span>
           </div>
         </div>
         
-        <div className="post-menu-container">
-          <button className="icon-btn" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            <MoreHorizontal size={20} />
-          </button>
-          
-          {isMenuOpen && (
-            <div className="post-menu">
-              <button onClick={() => { setIsEditing(true); setIsMenuOpen(false); }}>
-                <Edit2 size={16} /> Edit
-              </button>
-              <button className="delete-btn" onClick={() => { onDelete(post.id); setIsMenuOpen(false); }}>
-                <Trash2 size={16} /> Delete
-              </button>
-            </div>
-          )}
-        </div>
+        {isOwner && (
+          <div className="post-menu-container">
+            <button className="icon-btn" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+              <MoreHorizontal size={20} />
+            </button>
+            
+            {isMenuOpen && (
+              <div className="post-menu">
+                <button onClick={() => { setIsEditing(true); setIsMenuOpen(false); }}>
+                  <Edit2 size={16} /> Edit
+                </button>
+                <button className="delete-btn" onClick={() => { onDelete(post._id); setIsMenuOpen(false); }}>
+                  <Trash2 size={16} /> Delete
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="post-content">
@@ -109,14 +101,14 @@ export const Post = memo(({ post, onDelete, onEdit, onLike, onAddComment, onDele
           onClick={() => setShowComments(!showComments)}
         >
           <MessageCircle size={18} />
-          <span>{totalComments}</span>
+          {/* We'll update comment count logic later */}
         </button>
         <button 
-          className={`action-btn like ${post.isLiked ? 'active' : ''}`}
-          onClick={() => onLike(post.id)}
+          className={`action-btn like ${isLiked ? 'active' : ''}`}
+          onClick={() => onLike(post._id)}
         >
-          <Heart size={18} fill={post.isLiked ? 'currentColor' : 'none'} />
-          <span>{post.likes}</span>
+          <Heart size={18} fill={isLiked ? 'currentColor' : 'none'} />
+          <span>{post.likes.length}</span>
         </button>
         <button className="action-btn">
           <Share2 size={18} />
@@ -125,8 +117,7 @@ export const Post = memo(({ post, onDelete, onEdit, onLike, onAddComment, onDele
 
       {showComments && (
         <CommentSection 
-          comments={post.comments} 
-          postId={post.id}
+          postId={post._id}
           onAddComment={onAddComment}
           onDeleteComment={onDeleteComment}
         />

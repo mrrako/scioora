@@ -1,19 +1,50 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Comment } from './Comment';
 import { CommentInput } from './CommentInput';
-import { useAuth } from '../../context/AuthContext';
+import api from '../../services/api';
 import './CommentSection.scss';
 
-export function CommentSection({ comments, postId, onAddComment, onDeleteComment }) {
-  const { user: currentUser } = useAuth();
-  
-  const handleTopLevelSubmit = (text) => {
-    const author = {
-      name: currentUser?.name || currentUser?.username || 'Unknown User',
-      username: currentUser?.username || 'unknown',
-      avatar: currentUser?.avatar || `https://ui-avatars.com/api/?name=${currentUser?.username || 'User'}&background=random`,
-    };
-    onAddComment(postId, null, text, author);
+export function CommentSection({ postId, onAddComment, onDeleteComment }) {
+  const [comments, setComments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchComments = useCallback(async () => {
+    try {
+      const response = await api.get(`/comments/${postId}`);
+      if (response.success) {
+        setComments(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [postId]);
+
+  useEffect(() => {
+    fetchComments();
+  }, [fetchComments]);
+
+  const handleTopLevelSubmit = async (text) => {
+    const newComment = await onAddComment(postId, text);
+    if (newComment) {
+      setComments((prev) => [newComment, ...prev]);
+    }
+  };
+
+  const handleDelete = async (commentId) => {
+    const success = await onDeleteComment(postId, commentId);
+    if (success) {
+      setComments((prev) => prev.filter((c) => c._id !== commentId));
+    }
+  };
+
+  const handleReply = async (text, parentId) => {
+    const newComment = await onAddComment(postId, text, parentId);
+    if (newComment) {
+      // Refresh to get nested structure correctly or update locally
+      fetchComments();
+    }
   };
 
   return (
@@ -23,14 +54,16 @@ export function CommentSection({ comments, postId, onAddComment, onDeleteComment
       </div>
       
       <div className="comments-list">
-        {comments && comments.length > 0 ? (
+        {loading ? (
+          <p className="loading-comments">Loading comments...</p>
+        ) : comments && comments.length > 0 ? (
           comments.map(comment => (
             <Comment 
-              key={comment.id} 
+              key={comment._id} 
               comment={comment} 
               postId={postId}
-              onAddComment={onAddComment}
-              onDeleteComment={onDeleteComment}
+              onReply={handleReply}
+              onDelete={handleDelete}
             />
           ))
         ) : (

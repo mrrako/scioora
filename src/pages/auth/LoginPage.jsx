@@ -18,7 +18,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const result = login(username, password);
+      const result = await login(username, password);
       if (result.success) {
         navigate('/');
       } else {

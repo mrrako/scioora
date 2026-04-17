@@ -1,89 +1,40 @@
 import { useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { authService } from '../services/authService';
-import { useNotifications } from './useNotifications';
+import authService from '../services/authService';
 
 export function useFollow() {
   const { user: currentUser, refreshUser } = useAuth();
-  const { addNotification } = useNotifications();
   const [loading, setLoading] = useState(false);
 
   const isFollowing = useCallback((userId) => {
     return currentUser?.following?.includes(userId);
   }, [currentUser]);
 
-  const follow = useCallback(async (targetUserId) => {
-    if (!currentUser || currentUser.id === targetUserId) return;
+  const toggleFollow = useCallback(async (userId) => {
+    if (!currentUser || currentUser._id === userId) return;
     setLoading(true);
 
     try {
-      const users = authService.getUsers();
-      const targetUser = users.find(u => u.id === targetUserId);
+      const currentlyFollowing = isFollowing(userId);
       
-      if (!targetUser) return;
+      if (currentlyFollowing) {
+        await authService.unfollowUser(userId);
+      } else {
+        await authService.followUser(userId);
+      }
 
-      // Update Current User
-      const updatedFollowing = [...(currentUser.following || []), targetUserId];
-      authService.updateUser(currentUser.id, { following: updatedFollowing });
-
-      // Update Target User
-      const updatedFollowers = [...(targetUser.followers || []), currentUser.id];
-      authService.updateUser(targetUserId, { followers: updatedFollowers });
-
-      // Trigger Notification
-      addNotification({
-        type: 'follow',
-        userId: targetUserId,
-        user: {
-          id: currentUser.id,
-          name: currentUser.username,
-          avatar: currentUser.avatar,
-        },
-        content: 'started following you',
-        isRead: false,
-        timestamp: new Date().toISOString(),
-      });
-
-      refreshUser();
+      // Refresh the current user to get the updated following array
+      // In a real app, you might just update local state optimistically, 
+      // but refreshing ensures it's perfectly in sync.
+      if (refreshUser) {
+        refreshUser();
+      }
     } catch (err) {
-      console.error('Follow failed:', err);
+      console.error('Toggle follow failed:', err);
     } finally {
       setLoading(false);
     }
-  }, [currentUser, addNotification, refreshUser]);
+  }, [currentUser, isFollowing, refreshUser]);
 
-  const unfollow = useCallback(async (targetUserId) => {
-    if (!currentUser) return;
-    setLoading(true);
-
-    try {
-      const users = authService.getUsers();
-      const targetUser = users.find(u => u.id === targetUserId);
-
-      if (!targetUser) return;
-
-      // Update Current User
-      const updatedFollowing = currentUser.following.filter(id => id !== targetUserId);
-      authService.updateUser(currentUser.id, { following: updatedFollowing });
-
-      // Update Target User
-      const updatedFollowers = targetUser.followers.filter(id => id !== currentUser.id);
-      authService.updateUser(targetUserId, { followers: updatedFollowers });
-
-      refreshUser();
-    } catch (err) {
-      console.error('Unfollow failed:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [currentUser, refreshUser]);
-
-  const toggleFollow = useCallback((userId) => {
-    if (isFollowing(userId)) {
-      return unfollow(userId);
-    }
-    return follow(userId);
-  }, [isFollowing, follow, unfollow]);
-
-  return { isFollowing, toggleFollow, follow, unfollow, loading };
+  return { isFollowing, toggleFollow, loading };
 }

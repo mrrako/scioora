@@ -1,112 +1,113 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { useLocalStorage } from './useLocalStorage';
-import { v4 as uuidv4 } from 'uuid';
+import { io } from 'socket.io-client';
+import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { authService } from '../services/authService';
+import authService from '../services/authService';
 
-// Helper to get a stable chatId for two users regardless of who is current
-const getChatId = (id1, id2) => {
-  return [id1, id2].sort().join('_');
-};
+const SOCKET_URL = 'http://localhost:5000';
 
 export function useMessages() {
   const { user: currentUser } = useAuth();
-  
-  // Shared global messages and chats state
-  const [allMessages, setAllMessages] = useLocalStorage('social-dash-global-messages-v2', {});
+  const [socket, setSocket] = useState(null);
+  const [messages, setMessages] = useState([]); // Messages for the active chat
+  const [chats, setChats] = useState([]);
+  const [activeChatId, setActiveChatId] = useState(null);
 
-  // Data Migration: Convert old 'me' senderId to actual userId
+  // Initialize Socket
   useEffect(() => {
-    if (!currentUser) return;
-    let hasChanges = false;
-    const migratedMessages = { ...allMessages };
+    if (currentUser) {
+      const newSocket = io(SOCKET_URL);
+      setSocket(newSocket);
 
-    Object.keys(migratedMessages).forEach(chatId => {
-      migratedMessages[chatId] = migratedMessages[chatId].map(msg => {
-        if (msg.senderId === 'me') {
-          hasChanges = true;
-          return { ...msg, senderId: currentUser.id };
-        }
-        return msg;
+      newSocket.emit('setup', currentUser);
+
+      newSocket.on('message_received', (newMessage) => {
+        // If message is for the active chat, add it to state
+        setMessages((prev) => [...prev, newMessage]);
+        // Also refresh chat list to show last message
+        fetchChats();
       });
-    });
 
-    if (hasChanges) {
-      setAllMessages(migratedMessages);
+      return () => newSocket.close();
     }
-  }, [currentUser, allMessages, setAllMessages]);
+  }, [currentUser]);
 
-  // Generate the chat list for the current user based on global messages
-  const chats = useMemo(() => {
-    if (!currentUser) return [];
-    const allUsers = authService.getUsers();
-    
-    return allUsers
-      .filter(u => u.id !== currentUser.id)
-      .map((user, index) => {
-        const chatId = getChatId(currentUser.id, user.id);
-        const chatMessages = allMessages[chatId] || [];
-        const lastMsg = chatMessages[chatMessages.length - 1];
-        
-        // Calculate unread count (messages NOT from me and NOT read)
-        const unreadCount = chatMessages.filter(m => m.senderId !== currentUser.id && !m.isRead).length;
-
-        return {
-          id: chatId,
-          user: {
-            id: user.id,
-            name: user.name || user.username,
-            avatar: user.avatar,
-            status: index % 2 === 0 ? 'online' : 'offline',
-          },
-          lastMessage: lastMsg ? lastMsg.text : 'No messages yet',
-          timestamp: lastMsg ? lastMsg.timestamp : new Date(Date.now() - (index + 1) * 3600000).toISOString(),
-          unreadCount,
-        };
-      })
-      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-  }, [currentUser, allMessages]);
-
-  const sendMessage = useCallback((chatId, text) => {
+  const fetchChats = useCallback(async () => {
     if (!currentUser) return;
+    try {
+      // In a real app, you'd have an /api/chat/list endpoint
+      // For now, we'll get all users and simulate the list
+      const users = await authService.getAllUsers();
+      const chatList = users
+        .filter(u => u._id !== currentUser._id)
+        .map(user => ({
+          id: user._id, // Using userId as chatId for simplicity in 1-on-1
+          user: {
+            _id: user._id,
+            name: user.name,
+            username: user.username,
+            avatar: user.avatar,
+            status: 'offline', // Socket logic for online status can be added later
+          },
+          lastMessage: 'Open to chat',
+          timestamp: new Date().toISOString(),
+          unreadCount: 0,
+        }));
+      setChats(chatList);
+    } catch (error) {
+      console.error('Error fetching chats:', error);
+    }
+  }, [currentUser]);
 
-    const newMessage = {
-      id: uuidv4(),
-      senderId: currentUser.id,
-      text,
-      timestamp: new Date().toISOString(),
-      isRead: false,
-    };
+  useEffect(() => {
+    fetchChats();
+  }, [fetchChats]);
 
-    setAllMessages((prev) => ({
-      ...prev,
-      [chatId]: [...(prev[chatId] || []), newMessage],
-    }));
-  }, [currentUser, setAllMessages]);
+  const fetchMessages = useCallback(async (userId) => {
+    try {
+      const response = await api.get(`/chat/${userId}`);
+      if (response.success) {
+        setMessages(response.data);
+        setActiveChatId(userId);
+      }
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    }
+  }, []);
 
-  const markAsRead = useCallback((chatId) => {
-    if (!currentUser || !allMessages[chatId]) return;
-    
-    const hasUnread = allMessages[chatId].some(m => m.senderId !== currentUser.id && !m.isRead);
-    if (!hasUnread) return;
+  const sendMessage = useCallback((receiverId, text) => {
+    if (socket && currentUser) {
+      const messageData = {
+        sender: currentUser._id,
+        receiver: receiverId,
+        text,
+      };
+      
+      // Emit socket event
+      socket.emit('new_message', messageData);
 
-    setAllMessages((prev) => ({
-      ...prev,
-      [chatId]: prev[chatId].map(msg => 
-        msg.senderId !== currentUser.id ? { ...msg, isRead: true } : msg
-      ),
-    }));
-  }, [currentUser, allMessages, setAllMessages]);
+      // Optimistically add to messages (or wait for socket confirmation)
+      // socket.on('message_sent', ...) would be cleaner
+    }
+  }, [socket, currentUser]);
 
-  const totalUnreadCount = useMemo(() => {
-    return chats.reduce((acc, chat) => acc + chat.unreadCount, 0);
-  }, [chats]);
+  // Handle message_sent confirmation
+  useEffect(() => {
+    if (socket) {
+      socket.on('message_sent', (sentMessage) => {
+        setMessages((prev) => [...prev, sentMessage]);
+        fetchChats();
+      });
+      return () => socket.off('message_sent');
+    }
+  }, [socket, fetchChats]);
 
   return {
     chats,
-    messages: allMessages,
+    messages,
     sendMessage,
-    markAsRead,
-    totalUnreadCount
+    fetchMessages,
+    activeChatId,
+    totalUnreadCount: 0 // Will implement unread count later
   };
 }
