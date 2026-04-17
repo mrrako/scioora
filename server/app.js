@@ -3,7 +3,7 @@ const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
-const mongoSanitize = require('express-mongo-sanitize');
+// const mongoSanitize = require('express-mongo-sanitize'); // Removed due to Express 5 compatibility
 // const xss = require('xss-clean'); // Removed due to Express 5 compatibility
 const rateLimit = require('express-rate-limit');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
@@ -21,7 +21,7 @@ const limiter = rateLimit({
 app.use(helmet()); // Security Headers
 app.use(cors());
 app.use(express.json({ limit: '10kb' })); // Body limit
-app.use(mongoSanitize()); // Data Sanitization against NoSQL injection
+  // app.use(mongoSanitize()); // Removed due to Express 5 compatibility (Cannot set property query of IncomingMessage)
   // app.use(xss()); // Removed due to Express 5 compatibility (Cannot set property query of IncomingMessage)
 app.use('/api', limiter); // Apply rate limiting to all API routes
 app.use(express.urlencoded({ extended: true }));
