@@ -42,8 +42,8 @@ app.use('/api/chat', require('./routes/chatRoutes'));
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../dist')));
 
-  app.get('(.*)', (req, res, next) => {
-    if (req.url.startsWith('/api')) return next();
+  app.use((req, res, next) => {
+    if (req.method !== 'GET' || req.url.startsWith('/api')) return next();
     res.sendFile(path.resolve(__dirname, '../dist', 'index.html'));
   });
 } else {
