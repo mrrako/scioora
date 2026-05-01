@@ -37,13 +37,14 @@ export function useStories() {
         })
         .map(userStory => ({
           ...userStory,
-          items: userStory.items.filter(item => {
+          items: (userStory.items || []).filter(item => {
             const storyDate = new Date(item.timestamp);
             const now = new Date();
+            // 24 hour expiry
             return (now - storyDate) < 24 * 60 * 60 * 1000;
           }),
         }))
-        .filter(userStory => userStory.items.length > 0);
+        .filter(userStory => userStory.items && userStory.items.length > 0);
 
       setStories(activeStories);
     });
@@ -73,7 +74,7 @@ export function useStories() {
     try {
       const newItem = {
         id: uuidv4(),
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString(), // Stories often use ISO for simple array storage
         ...item,
       };
 

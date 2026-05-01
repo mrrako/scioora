@@ -29,10 +29,18 @@ export function useNotifications() {
     );
 
     const unsubscribe = onSnapshot(notificationsQuery, (snapshot) => {
-      const notifs = snapshot.docs.map(doc => ({
-        _id: doc.id,
-        ...doc.data()
-      }));
+      const notifs = snapshot.docs.map(doc => {
+        const data = doc.data();
+        let createdAt = data.createdAt;
+        if (createdAt && typeof createdAt.toDate === 'function') {
+          createdAt = createdAt.toDate().toISOString();
+        }
+        return {
+          _id: doc.id,
+          ...data,
+          createdAt
+        };
+      });
       setNotifications(notifs);
       setLoading(false);
     }, (error) => {
