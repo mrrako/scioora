@@ -4,6 +4,11 @@
 .messages-page {
   height: calc(100vh - v.$navbar-height - 4rem);
   margin: -1rem; // Offset the main container padding
+
+  @include m.respond-to('sm') {
+    height: calc(100vh - 120px); // Adjust for top/bottom nav
+    margin: 0;
+  }
 }
 
 .messages-container {
@@ -14,6 +19,11 @@
   display: flex;
   box-shadow: var(--shadow-md);
   border: 1px solid var(--border-color);
+
+  @include m.respond-to('sm') {
+    border-radius: 0;
+    border: none;
+  }
 }
 
 .chat-area {
@@ -21,6 +31,27 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 0; // Crucial for flex scrolling
+  min-height: 0;
   overflow: hidden;
+  background-color: var(--bg-primary);
+
+  @include m.respond-to('sm') {
+    display: none;
+  }
+}
+
+// Mobile Chat Active State
+.messages-page.chat-active {
+  @include m.respond-to('sm') {
+    .chat-list {
+      display: none;
+    }
+    .chat-area {
+      display: flex;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background-color: var(--bg-primary);
+    }
+  }
 }

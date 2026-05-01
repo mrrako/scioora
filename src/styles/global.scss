@@ -164,7 +164,16 @@ button {
   flex: 1;
   overflow-y: auto;
   padding: 2.5rem;
-  background-color: transparent; // Let the mesh show through
+  background-color: transparent; 
+
+  @include m.respond-to('md') {
+    padding: 1.5rem;
+  }
+  
+  @include m.respond-to('sm') {
+    padding: 1rem;
+    padding-bottom: calc(60px + 2rem); // Space for bottom nav
+  }
 }
 
 // Transitions for Framer Motion

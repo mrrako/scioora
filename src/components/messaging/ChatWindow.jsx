@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from 'react';
-import { MessageSquare, Phone, Video, Info } from 'lucide-react';
+import { MessageSquare, Phone, Video, Info, ChevronLeft } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import './ChatWindow.scss';
 
-export function ChatWindow({ chat, messages, isTyping }) {
+export function ChatWindow({ chat, messages, isTyping, onBack }) {
   const { user: currentUser } = useAuth();
   const scrollRef = useRef(null);
 
@@ -16,7 +16,9 @@ export function ChatWindow({ chat, messages, isTyping }) {
   if (!chat) {
     return (
       <div className="chat-window-empty">
-        <MessageSquare size={64} />
+        <div className="empty-icon">
+          <MessageSquare size={32} />
+        </div>
         <h3>Select a chat to start messaging</h3>
       </div>
     );
@@ -37,12 +39,17 @@ export function ChatWindow({ chat, messages, isTyping }) {
     <div className="chat-window">
       <div className="chat-window-header">
         <div className="user-info">
-          <img 
-            src={chat.user?.avatar || `https://ui-avatars.com/api/?name=${chat.user?.username}&background=random`} 
-            alt={chat.user?.name} 
-            className="chat-avatar" 
-          />
-          <div>
+          <button className="mobile-back-btn" onClick={onBack}>
+            <ChevronLeft size={24} />
+          </button>
+          <div className={`chat-avatar-wrapper ${chat.user?.status === 'online' ? 'online' : ''}`}>
+            <img 
+              src={chat.user?.avatar || `https://ui-avatars.com/api/?name=${chat.user?.username}&background=random`} 
+              alt={chat.user?.name} 
+              className="chat-avatar" 
+            />
+          </div>
+          <div className="user-details">
             <h4>{chat.user?.name}</h4>
             <span className={`status ${chat.user?.status || 'offline'}`}>{chat.user?.status || 'offline'}</span>
           </div>

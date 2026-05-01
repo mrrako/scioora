@@ -36,7 +36,7 @@ export default function Messages() {
   };
 
   return (
-    <div className="messages-page">
+    <div className={`messages-page ${selectedChatId ? 'chat-active' : ''}`}>
       <div className="messages-container">
         <ChatList 
           chats={chats} 
@@ -48,6 +48,7 @@ export default function Messages() {
             chat={activeChat} 
             messages={messages} 
             isTyping={false}
+            onBack={() => setSelectedChatId(null)}
           />
           {selectedChatId && (
             <MessageInput onSendMessage={handleSendMessage} />
