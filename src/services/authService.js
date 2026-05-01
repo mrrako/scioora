@@ -130,6 +130,7 @@ const authService = {
     try {
       const currentUser = authService.getCurrentUser();
       if (!currentUser) throw new Error("Not authenticated");
+      if (currentUser.uid === targetUserId) throw new Error("You cannot follow yourself");
 
       const currentUserRef = doc(db, 'users', currentUser.uid);
       const targetUserRef = doc(db, 'users', targetUserId);
@@ -152,6 +153,7 @@ const authService = {
     try {
       const currentUser = authService.getCurrentUser();
       if (!currentUser) throw new Error("Not authenticated");
+      if (currentUser.uid === targetUserId) throw new Error("You cannot follow yourself");
 
       const currentUserRef = doc(db, 'users', currentUser.uid);
       const targetUserRef = doc(db, 'users', targetUserId);

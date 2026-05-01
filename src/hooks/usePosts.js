@@ -10,7 +10,8 @@ import {
   query,
   orderBy,
   arrayUnion,
-  arrayRemove
+  arrayRemove,
+  serverTimestamp
 } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 
@@ -57,7 +58,7 @@ export function usePosts() {
         content,
         image: image || null,
         likes: [],
-        createdAt: new Date().toISOString(),
+        createdAt: serverTimestamp(),
         user: {
           _id: currentUser.uid,
           name: currentUser.fullName || currentUser.username || 'User',
@@ -125,7 +126,7 @@ export function usePosts() {
         postId,
         text,
         parentId: parentId || null,
-        createdAt: new Date().toISOString(),
+        createdAt: serverTimestamp(),
         user: {
           _id: currentUser.uid,
           name: currentUser.fullName || currentUser.username || 'User',
