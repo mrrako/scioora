@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { db } from '../config/firebase';
 import { 
   collection, 
@@ -7,7 +7,6 @@ import {
   where, 
   orderBy, 
   onSnapshot,
-  getDocs,
   serverTimestamp
 } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
@@ -22,13 +21,11 @@ export function useMessages() {
   const [messages, setMessages] = useState([]);
   const [chats, setChats] = useState([]);
   const [activeChatId, setActiveChatId] = useState(null);
-  const [activeReceiverId, setActiveReceiverId] = useState(null);
-  const [unsubscribeMessages, setUnsubscribeMessages] = useState(() => () => {});
+  const unsubscribeRef = useRef(null);
 
   const fetchChats = useCallback(async () => {
     if (!currentUser) return;
     try {
-      // Simulate getting all users except current
       const response = await authService.getAllUsers();
       if (response.success) {
         const chatList = response.data
@@ -36,6 +33,7 @@ export function useMessages() {
           .map(user => ({
             id: user.uid,
             user: {
+              uid: user.uid,
               _id: user.uid,
               name: user.fullName || user.username || 'User',
               username: user.username,
@@ -58,12 +56,14 @@ export function useMessages() {
   }, [fetchChats]);
 
   const fetchMessages = useCallback((receiverId) => {
-    if (!currentUser) return;
+    if (!currentUser || !receiverId) return;
     
-    // Clean up previous listener
-    unsubscribeMessages();
+    // Clean up previous listener using ref to avoid re-render loops
+    if (unsubscribeRef.current) {
+      unsubscribeRef.current();
+      unsubscribeRef.current = null;
+    }
     
-    setActiveReceiverId(receiverId);
     setActiveChatId(receiverId);
 
     const chatId = getChatId(currentUser.uid, receiverId);
@@ -74,10 +74,9 @@ export function useMessages() {
       orderBy('createdAt', 'asc')
     );
 
-    const unsubscribe = onSnapshot(messagesQuery, (snapshot) => {
+    unsubscribeRef.current = onSnapshot(messagesQuery, (snapshot) => {
       const msgs = snapshot.docs.map(doc => {
         const data = doc.data();
-        // Convert Firestore Timestamp to ISO string for the UI if needed
         let createdAt = data.createdAt;
         if (createdAt && typeof createdAt.toDate === 'function') {
           createdAt = createdAt.toDate().toISOString();
@@ -90,13 +89,13 @@ export function useMessages() {
         };
       });
       setMessages(msgs);
+    }, (error) => {
+      console.error("Snapshot error:", error);
     });
-
-    setUnsubscribeMessages(() => unsubscribe);
-  }, [currentUser, unsubscribeMessages]);
+  }, [currentUser]); // Only depend on currentUser
 
   const sendMessage = useCallback(async (receiverId, text) => {
-    if (!currentUser || !text.trim()) return;
+    if (!currentUser || !text.trim() || !receiverId) return;
     
     const chatId = getChatId(currentUser.uid, receiverId);
     
@@ -110,7 +109,6 @@ export function useMessages() {
 
     try {
       await addDoc(collection(db, 'messages'), newMessage);
-      // fetchChats could be called here to update "lastMessage" if we were storing it
     } catch (error) {
       console.error('Error sending message:', error);
     }
@@ -118,8 +116,12 @@ export function useMessages() {
 
   // Clean up on unmount
   useEffect(() => {
-    return () => unsubscribeMessages();
-  }, [unsubscribeMessages]);
+    return () => {
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+      }
+    };
+  }, []);
 
   return {
     chats,
