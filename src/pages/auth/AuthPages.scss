@@ -4,144 +4,216 @@
 .auth-page {
   min-height: 100vh;
   @include m.flex-center;
-  background: linear-gradient(135deg, v.$primary-color 0%, #6366f1 100%);
+  background: var(--bg-primary);
   padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+
+  // Re-use mesh background if not globally in layout for auth
+  &::before, &::after {
+    content: '';
+    position: absolute;
+    width: 80vmax;
+    height: 80vmax;
+    border-radius: 50%;
+    filter: blur(100px);
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.4;
+  }
+
+  &::before {
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%);
+    top: -20%;
+    left: -20%;
+    animation: auth-mesh-1 20s infinite alternate;
+  }
+
+  &::after {
+    background: radial-gradient(circle, rgba(236, 72, 153, 0.15) 0%, transparent 70%);
+    bottom: -20%;
+    right: -20%;
+    animation: auth-mesh-2 25s infinite alternate;
+  }
+}
+
+@keyframes auth-mesh-1 {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(10%, 10%) scale(1.1); }
+}
+
+@keyframes auth-mesh-2 {
+  from { transform: translate(0, 0) scale(1.1); }
+  to { transform: translate(-10%, -10%) scale(1); }
 }
 
 .auth-card {
-  background-color: var(--bg-secondary);
-  border-radius: 1.5rem;
+  position: relative;
+  z-index: 1;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-radius: v.$radius-xl;
   width: 100%;
-  max-width: 420px;
-  padding: 2.5rem;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  max-width: 440px;
+  padding: 3.5rem 2.5rem;
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--glass-border);
+  transition: v.$transition-slow;
+
+  &:hover {
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12);
+  }
 }
 
 .auth-header {
   text-align: center;
-  margin-bottom: 2.5rem;
+  margin-bottom: 3rem;
 
   .logo-icon {
-    width: 64px;
-    height: 64px;
-    background-color: rgba(v.$primary-color, 0.1);
-    color: v.$primary-color;
-    border-radius: 1rem;
+    width: 72px;
+    height: 72px;
+    background: var(--accent-gradient);
+    color: white;
+    border-radius: v.$radius-lg;
     @include m.flex-center;
     margin: 0 auto 1.5rem;
-    
-    &.signup {
-      background-color: rgba(v.$success-color, 0.1);
-      color: v.$success-color;
+    box-shadow: var(--shadow-glow);
+    transition: v.$transition-bounce;
+
+    &:hover {
+      transform: rotate(10deg) scale(1.1);
     }
   }
 
   h1 {
-    font-size: 1.75rem;
+    font-family: v.$font-family-heading;
+    font-size: 2rem;
     font-weight: 800;
     color: var(--text-primary);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.03em;
   }
 
   p {
-    color: var(--text-muted);
-    font-size: 0.95rem;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    font-weight: 500;
   }
 }
 
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.75rem;
 
   .error-message {
     background-color: rgba(v.$danger-color, 0.1);
     color: v.$danger-color;
-    padding: 0.75rem 1rem;
-    border-radius: 0.75rem;
+    padding: 1rem;
+    border-radius: v.$radius-md;
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 600;
     border: 1px solid rgba(v.$danger-color, 0.2);
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
   }
 
   .input-group {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.65rem;
 
     label {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.6rem;
       font-size: 0.85rem;
       font-weight: 700;
-      color: var(--text-primary);
+      color: var(--text-secondary);
       text-transform: uppercase;
-      letter-spacing: 0.025em;
+      letter-spacing: 0.05em;
     }
 
     input {
       background-color: var(--bg-primary);
       border: 1px solid var(--border-color);
-      border-radius: 0.75rem;
-      padding: 0.85rem 1rem;
+      border-radius: v.$radius-md;
+      padding: 1rem 1.25rem;
       color: var(--text-primary);
       font-size: 1rem;
       outline: none;
-      transition: all 0.2s ease;
+      transition: v.$transition-bounce;
+      width: 100%;
 
       &::placeholder {
         color: var(--text-muted);
-        opacity: 0.6;
+        opacity: 0.5;
       }
 
       &:focus {
         border-color: v.$primary-color;
         box-shadow: 0 0 0 4px rgba(v.$primary-color, 0.1);
+        background-color: var(--bg-secondary);
       }
     }
   }
 
   .auth-submit {
-    background-color: v.$primary-color;
+    background: var(--accent-gradient);
     color: white;
-    padding: 1rem;
-    border-radius: 0.75rem;
+    padding: 1.1rem;
+    border-radius: v.$radius-md;
     font-weight: 700;
-    font-size: 1rem;
-    transition: all 0.2s ease;
-    margin-top: 0.5rem;
+    font-family: v.$font-family-heading;
+    font-size: 1.1rem;
+    transition: v.$transition-bounce;
+    margin-top: 0.75rem;
+    box-shadow: var(--shadow-glow);
 
     &:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(v.$primary-color, 0.2);
+      box-shadow: 0 12px 24px rgba(99, 102, 241, 0.3);
+    }
+
+    &:active {
+      transform: translateY(0) scale(0.98);
     }
 
     &:disabled {
       opacity: 0.6;
       cursor: not-allowed;
+      box-shadow: none;
     }
   }
 }
 
 .auth-footer {
-  margin-top: 2rem;
+  margin-top: 2.5rem;
   text-align: center;
-  font-size: 0.95rem;
+  font-size: 1rem;
   color: var(--text-muted);
+  font-weight: 500;
 
   a {
     color: v.$primary-color;
     font-weight: 700;
     text-decoration: none;
+    margin-left: 0.25rem;
+    transition: v.$transition-base;
     
     &:hover {
+      color: v.$secondary-color;
       text-decoration: underline;
     }
   }
+}
+
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
 }

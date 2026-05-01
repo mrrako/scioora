@@ -6,38 +6,50 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   border-bottom: 1px solid var(--glass-border);
-  padding: 0 2rem;
+  padding: 0 2.5rem;
   @include m.flex-between;
+  transition: v.$transition-slow;
+
+  // Add a very subtle bottom shadow
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
 }
 
 .navbar-search {
   position: relative;
-  width: 300px;
+  width: 350px;
 
   .search-icon {
     position: absolute;
-    left: 1rem;
+    left: 1.25rem;
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-muted);
+    transition: v.$transition-base;
   }
 
   input {
     width: 100%;
-    padding: 0.6rem 1rem 0.6rem 2.5rem;
-    border-radius: 2rem;
+    padding: 0.8rem 1.25rem 0.8rem 3rem;
+    border-radius: v.$radius-full;
     border: 1px solid var(--border-color);
     background-color: var(--bg-primary);
     color: var(--text-primary);
     outline: none;
-    transition: border-color 0.2s ease;
+    transition: v.$transition-bounce;
+    font-size: 0.95rem;
 
     &:focus {
       border-color: v.$primary-color;
+      box-shadow: 0 0 0 4px rgba(v.$primary-color, 0.1);
+      width: 110%; // Subtle expansion
+      
+      & + .search-icon {
+        color: v.$primary-color;
+      }
     }
   }
 }
@@ -45,7 +57,7 @@
 .navbar-actions {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1.25rem;
 
   .notification-wrapper {
     position: relative;
@@ -54,27 +66,31 @@
   .icon-btn {
     position: relative;
     color: var(--text-secondary);
-    padding: 0.5rem;
+    padding: 0.7rem;
     border-radius: 50%;
-    transition: all 0.2s ease;
+    transition: v.$transition-bounce;
     @include m.flex-center;
+    background: var(--bg-tertiary);
 
     &:hover, &.active {
-      background-color: var(--bg-tertiary);
-      color: var(--text-primary);
+      background-color: v.$primary-color;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-glow);
     }
 
     .badge {
       position: absolute;
-      top: 0;
-      right: 0;
+      top: -2px;
+      right: -2px;
       background-color: v.$danger-color;
       color: white;
-      font-size: 0.65rem;
-      font-weight: bold;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
+      font-size: 0.7rem;
+      font-weight: 700;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 4px;
+      border-radius: 10px;
       border: 2px solid var(--bg-secondary);
       @include m.flex-center;
     }
@@ -84,16 +100,25 @@
 .user-profile {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  cursor: pointer;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: v.$radius-full;
+  transition: v.$transition-bounce;
+  background: var(--bg-tertiary);
+
+  &:hover {
+    background: var(--bg-secondary);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
 
   .avatar {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    background-color: var(--bg-tertiary);
-    color: var(--text-secondary);
-    @include m.flex-center;
+    background-color: var(--border-color);
+    border: 2px solid white;
+    box-shadow: var(--shadow-sm);
     overflow: hidden;
 
     img {
@@ -103,22 +128,24 @@
     }
   }
 
-  .user-name {
-    font-weight: 600;
-    color: var(--text-primary);
-    font-size: 0.9rem;
-  }
+  .user-info-text {
+    display: none;
+    @include m.respond-to('lg') {
+      display: block;
+    }
 
-  .logout-btn {
-    color: var(--text-muted);
-    padding: 0.4rem;
-    border-radius: 0.5rem;
-    transition: all 0.2s ease;
-    @include m.flex-center;
-
-    &:hover {
-      background-color: rgba(v.$danger-color, 0.1);
-      color: v.$danger-color;
+    .user-name {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      display: block;
+      line-height: 1;
+    }
+    
+    .user-role {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
     }
   }
 }
