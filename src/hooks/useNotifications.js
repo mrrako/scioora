@@ -1,47 +1,74 @@
 import { useState, useCallback, useEffect } from 'react';
-import api from '../services/api';
+import { db } from '../config/firebase';
+import { 
+  collection, 
+  query, 
+  where, 
+  orderBy, 
+  onSnapshot,
+  doc,
+  updateDoc,
+  getDocs,
+  writeBatch
+} from 'firebase/firestore';
+import { useAuth } from '../context/AuthContext';
 
 export function useNotifications() {
+  const { user: currentUser } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchNotifications = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await api.get('/notifications');
-      if (response.success) {
-        setNotifications(response.data);
-      }
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    fetchNotifications();
-  }, [fetchNotifications]);
+    if (!currentUser) return;
+    
+    setLoading(true);
+    const notificationsQuery = query(
+      collection(db, 'notifications'),
+      where('recipientId', '==', currentUser.uid),
+      orderBy('createdAt', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(notificationsQuery, (snapshot) => {
+      const notifs = snapshot.docs.map(doc => ({
+        _id: doc.id,
+        ...doc.data()
+      }));
+      setNotifications(notifs);
+      setLoading(false);
+    }, (error) => {
+      console.error('Error fetching notifications:', error);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [currentUser]);
 
   const markAsRead = async (id) => {
     try {
-      const response = await api.put(`/notifications/${id}/read`);
-      if (response.success) {
-        setNotifications((prev) =>
-          prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
-        );
-      }
+      const notifRef = doc(db, 'notifications', id);
+      await updateDoc(notifRef, { isRead: true });
     } catch (error) {
       console.error('Error marking notification as read:', error);
     }
   };
 
   const markAllAsRead = async () => {
+    if (!currentUser) return;
     try {
-      const response = await api.put('/notifications/read-all');
-      if (response.success) {
-        setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-      }
+      const unreadQuery = query(
+        collection(db, 'notifications'),
+        where('recipientId', '==', currentUser.uid),
+        where('isRead', '==', false)
+      );
+      
+      const snapshot = await getDocs(unreadQuery);
+      if (snapshot.empty) return;
+
+      const batch = writeBatch(db);
+      snapshot.docs.forEach((document) => {
+        batch.update(document.ref, { isRead: true });
+      });
+      await batch.commit();
     } catch (error) {
       console.error('Error marking all as read:', error);
     }
@@ -55,6 +82,6 @@ export function useNotifications() {
     loading,
     markAsRead,
     markAllAsRead,
-    refreshNotifications: fetchNotifications,
+    refreshNotifications: () => {}, // onSnapshot handles this
   };
 }

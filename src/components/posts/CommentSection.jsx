@@ -1,29 +1,36 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Comment } from './Comment';
 import { CommentInput } from './CommentInput';
-import api from '../../services/api';
+import { db } from '../../config/firebase';
+import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 import './CommentSection.scss';
 
 export function CommentSection({ postId, onAddComment, onDeleteComment }) {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchComments = useCallback(async () => {
-    try {
-      const response = await api.get(`/comments/${postId}`);
-      if (response.success) {
-        setComments(response.data);
-      }
-    } catch (error) {
-      console.error('Error fetching comments:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [postId]);
-
   useEffect(() => {
-    fetchComments();
-  }, [fetchComments]);
+    setLoading(true);
+    const commentsQuery = query(
+      collection(db, 'comments'),
+      where('postId', '==', postId),
+      orderBy('createdAt', 'asc')
+    );
+
+    const unsubscribe = onSnapshot(commentsQuery, (snapshot) => {
+      const fetchedComments = snapshot.docs.map(doc => ({
+        _id: doc.id,
+        ...doc.data()
+      }));
+      setComments(fetchedComments);
+      setLoading(false);
+    }, (error) => {
+      console.error('Error fetching comments:', error);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [postId]);
 
   const handleTopLevelSubmit = async (text) => {
     const newComment = await onAddComment(postId, text);
@@ -40,11 +47,8 @@ export function CommentSection({ postId, onAddComment, onDeleteComment }) {
   };
 
   const handleReply = async (text, parentId) => {
-    const newComment = await onAddComment(postId, text, parentId);
-    if (newComment) {
-      // Refresh to get nested structure correctly or update locally
-      fetchComments();
-    }
+    await onAddComment(postId, text, parentId);
+    // onSnapshot will handle the update
   };
 
   return (

@@ -10,8 +10,10 @@ export function useSearch() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const data = await authService.getAllUsers();
-        setUsers(data);
+        const response = await authService.getAllUsers();
+        if (response.success) {
+          setUsers(response.data);
+        }
       } catch (error) {
         console.error('Error fetching users for search:', error);
       }

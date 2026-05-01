@@ -11,7 +11,7 @@ export function useFollow() {
   }, [currentUser]);
 
   const toggleFollow = useCallback(async (userId) => {
-    if (!currentUser || currentUser._id === userId) return;
+    if (!currentUser || currentUser.uid === userId) return;
     setLoading(true);
 
     try {
@@ -27,7 +27,7 @@ export function useFollow() {
       // In a real app, you might just update local state optimistically, 
       // but refreshing ensures it's perfectly in sync.
       if (refreshUser) {
-        refreshUser();
+        await refreshUser();
       }
     } catch (err) {
       console.error('Toggle follow failed:', err);

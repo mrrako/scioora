@@ -5,7 +5,7 @@ import { LogIn, User, Lock, AlertCircle } from 'lucide-react';
 import './AuthPages.scss';
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -18,7 +18,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const result = await login(username, password);
+      const result = await login(email, password);
       if (result.success) {
         navigate('/');
       } else {
@@ -51,16 +51,16 @@ export default function LoginPage() {
           )}
 
           <div className="input-group">
-            <label htmlFor="username">
+            <label htmlFor="email">
               <User size={18} />
-              Username
+              Email
             </label>
             <input
-              id="username"
-              type="text"
-              placeholder="Enter your username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              id="email"
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>

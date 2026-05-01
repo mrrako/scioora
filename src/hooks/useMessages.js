@@ -1,59 +1,52 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
-import { io } from 'socket.io-client';
-import api from '../services/api';
+import { useState, useCallback, useEffect } from 'react';
+import { db } from '../config/firebase';
+import { 
+  collection, 
+  addDoc, 
+  query, 
+  where, 
+  orderBy, 
+  onSnapshot,
+  getDocs
+} from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import authService from '../services/authService';
 
-const SOCKET_URL = 'http://localhost:5000';
+const getChatId = (uid1, uid2) => {
+  return [uid1, uid2].sort().join('_');
+};
 
 export function useMessages() {
   const { user: currentUser } = useAuth();
-  const [socket, setSocket] = useState(null);
-  const [messages, setMessages] = useState([]); // Messages for the active chat
+  const [messages, setMessages] = useState([]);
   const [chats, setChats] = useState([]);
   const [activeChatId, setActiveChatId] = useState(null);
-
-  // Initialize Socket
-  useEffect(() => {
-    if (currentUser) {
-      const newSocket = io(SOCKET_URL);
-      setSocket(newSocket);
-
-      newSocket.emit('setup', currentUser);
-
-      newSocket.on('message_received', (newMessage) => {
-        // If message is for the active chat, add it to state
-        setMessages((prev) => [...prev, newMessage]);
-        // Also refresh chat list to show last message
-        fetchChats();
-      });
-
-      return () => newSocket.close();
-    }
-  }, [currentUser]);
+  const [activeReceiverId, setActiveReceiverId] = useState(null);
+  const [unsubscribeMessages, setUnsubscribeMessages] = useState(() => () => {});
 
   const fetchChats = useCallback(async () => {
     if (!currentUser) return;
     try {
-      // In a real app, you'd have an /api/chat/list endpoint
-      // For now, we'll get all users and simulate the list
-      const users = await authService.getAllUsers();
-      const chatList = users
-        .filter(u => u._id !== currentUser._id)
-        .map(user => ({
-          id: user._id, // Using userId as chatId for simplicity in 1-on-1
-          user: {
-            _id: user._id,
-            name: user.name,
-            username: user.username,
-            avatar: user.avatar,
-            status: 'offline', // Socket logic for online status can be added later
-          },
-          lastMessage: 'Open to chat',
-          timestamp: new Date().toISOString(),
-          unreadCount: 0,
-        }));
-      setChats(chatList);
+      // Simulate getting all users except current
+      const response = await authService.getAllUsers();
+      if (response.success) {
+        const chatList = response.data
+          .filter(u => u.uid !== currentUser.uid)
+          .map(user => ({
+            id: user.uid,
+            user: {
+              _id: user.uid,
+              name: user.fullName || user.username || 'User',
+              username: user.username,
+              avatar: user.avatar,
+              status: 'offline',
+            },
+            lastMessage: 'Open to chat',
+            timestamp: new Date().toISOString(),
+            unreadCount: 0,
+          }));
+        setChats(chatList);
+      }
     } catch (error) {
       console.error('Error fetching chats:', error);
     }
@@ -63,44 +56,59 @@ export function useMessages() {
     fetchChats();
   }, [fetchChats]);
 
-  const fetchMessages = useCallback(async (userId) => {
+  const fetchMessages = useCallback((receiverId) => {
+    if (!currentUser) return;
+    
+    // Clean up previous listener
+    unsubscribeMessages();
+    
+    setActiveReceiverId(receiverId);
+    setActiveChatId(receiverId);
+
+    const chatId = getChatId(currentUser.uid, receiverId);
+    
+    const messagesQuery = query(
+      collection(db, 'messages'),
+      where('chatId', '==', chatId),
+      orderBy('createdAt', 'asc')
+    );
+
+    const unsubscribe = onSnapshot(messagesQuery, (snapshot) => {
+      const msgs = snapshot.docs.map(doc => ({
+        _id: doc.id,
+        ...doc.data()
+      }));
+      setMessages(msgs);
+    });
+
+    setUnsubscribeMessages(() => unsubscribe);
+  }, [currentUser, unsubscribeMessages]);
+
+  const sendMessage = useCallback(async (receiverId, text) => {
+    if (!currentUser || !text.trim()) return;
+    
+    const chatId = getChatId(currentUser.uid, receiverId);
+    
+    const newMessage = {
+      chatId,
+      sender: currentUser.uid,
+      receiver: receiverId,
+      text,
+      createdAt: new Date().toISOString()
+    };
+
     try {
-      const response = await api.get(`/chat/${userId}`);
-      if (response.success) {
-        setMessages(response.data);
-        setActiveChatId(userId);
-      }
+      await addDoc(collection(db, 'messages'), newMessage);
+      // fetchChats could be called here to update "lastMessage" if we were storing it
     } catch (error) {
-      console.error('Error fetching messages:', error);
+      console.error('Error sending message:', error);
     }
-  }, []);
+  }, [currentUser]);
 
-  const sendMessage = useCallback((receiverId, text) => {
-    if (socket && currentUser) {
-      const messageData = {
-        sender: currentUser._id,
-        receiver: receiverId,
-        text,
-      };
-      
-      // Emit socket event
-      socket.emit('new_message', messageData);
-
-      // Optimistically add to messages (or wait for socket confirmation)
-      // socket.on('message_sent', ...) would be cleaner
-    }
-  }, [socket, currentUser]);
-
-  // Handle message_sent confirmation
+  // Clean up on unmount
   useEffect(() => {
-    if (socket) {
-      socket.on('message_sent', (sentMessage) => {
-        setMessages((prev) => [...prev, sentMessage]);
-        fetchChats();
-      });
-      return () => socket.off('message_sent');
-    }
-  }, [socket, fetchChats]);
+    return () => unsubscribeMessages();
+  }, [unsubscribeMessages]);
 
   return {
     chats,
@@ -108,6 +116,6 @@ export function useMessages() {
     sendMessage,
     fetchMessages,
     activeChatId,
-    totalUnreadCount: 0 // Will implement unread count later
+    totalUnreadCount: 0
   };
 }

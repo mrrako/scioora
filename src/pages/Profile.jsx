@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import authService from '../services/authService';
-import api from '../services/api';
+import { db } from '../config/firebase';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useFollow } from '../hooks/useFollow';
 import { ProfileCard } from '../components/profile/ProfileCard';
 import { EditProfileModal } from '../components/profile/EditProfileModal';
@@ -34,14 +35,19 @@ export default function Profile() {
         if (!targetUsername) return;
         
         // Fetch User Profile
-        const userData = await authService.getUserProfile(targetUsername);
+        const response = await authService.getUserProfile(targetUsername);
+        const userData = response.success ? response.data : null;
+        if (!userData) throw new Error('User not found');
         setProfileUser(userData);
 
         // Fetch User Posts
-        const postsResponse = await api.get(`/posts/user/${userData._id}`);
-        if (postsResponse.success) {
-          setUserPosts(postsResponse.data);
-        }
+        const postsQuery = query(collection(db, 'posts'), where('user._id', '==', userData.uid));
+        const postsSnapshot = await getDocs(postsQuery);
+        const postsData = postsSnapshot.docs.map(doc => ({ _id: doc.id, ...doc.data() }));
+        
+        // Sort manually by createdAt since Firestore requires a composite index for where + orderBy
+        postsData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setUserPosts(postsData);
       } catch (error) {
         console.error('Error fetching profile:', error);
         setProfileUser(null);

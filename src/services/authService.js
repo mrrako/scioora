@@ -1,25 +1,72 @@
-import api from './api';
+import { auth, db } from '../config/firebase';
+import { 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signOut,
+  updateProfile as updateFirebaseProfile
+} from 'firebase/auth';
+import { 
+  doc, 
+  setDoc, 
+  getDoc, 
+  collection, 
+  getDocs,
+  updateDoc,
+  arrayUnion,
+  arrayRemove
+} from 'firebase/firestore';
 
 const authService = {
-  login: async (username, password) => {
-    const response = await api.post('/auth/login', { username, password });
-    if (response.success) {
-      localStorage.setItem('user', JSON.stringify(response.data));
-      return response.data;
+  login: async (email, password) => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
+      
+      const userData = {
+        uid: userCredential.user.uid,
+        email: userCredential.user.email,
+        ...userDoc.data()
+      };
+      
+      localStorage.setItem('user', JSON.stringify(userData));
+      return { success: true, data: userData };
+    } catch (error) {
+      throw new Error(error.message);
     }
-    throw new Error(response.message);
   },
 
   register: async (userData) => {
-    const response = await api.post('/auth/register', userData);
-    if (response.success) {
-      localStorage.setItem('user', JSON.stringify(response.data));
-      return response.data;
+    try {
+      const { email, password, username, fullName } = userData;
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
+      await updateFirebaseProfile(userCredential.user, {
+        displayName: username
+      });
+
+      const newUser = {
+        uid: userCredential.user.uid,
+        email,
+        username,
+        fullName,
+        bio: '',
+        avatar: '',
+        followers: [],
+        following: [],
+        createdAt: new Date().toISOString()
+      };
+
+      await setDoc(doc(db, 'users', userCredential.user.uid), newUser);
+      
+      localStorage.setItem('user', JSON.stringify(newUser));
+      return { success: true, data: newUser };
+    } catch (error) {
+      throw new Error(error.message);
     }
-    throw new Error(response.message);
   },
 
-  logout: () => {
+  logout: async () => {
+    await signOut(auth);
     localStorage.removeItem('user');
   },
 
@@ -29,34 +76,96 @@ const authService = {
   },
 
   updateProfile: async (profileData) => {
-    const response = await api.put('/users/profile', profileData);
-    if (response.success) {
-      const currentUser = JSON.parse(localStorage.getItem('user'));
-      const updatedUser = { ...currentUser, ...response.data };
+    try {
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser) throw new Error("Not authenticated");
+
+      const userRef = doc(db, 'users', currentUser.uid);
+      await updateDoc(userRef, profileData);
+
+      const updatedUser = { ...currentUser, ...profileData };
       localStorage.setItem('user', JSON.stringify(updatedUser));
-      return updatedUser;
+      return { success: true, data: updatedUser };
+    } catch (error) {
+      throw new Error(error.message);
     }
-    throw new Error(response.message);
   },
 
   getUserProfile: async (username) => {
-    const response = await api.get(`/users/${username}`);
-    return response.data;
+    try {
+      // Find user by username
+      const usersRef = collection(db, 'users');
+      const querySnapshot = await getDocs(usersRef);
+      let foundUser = null;
+      
+      querySnapshot.forEach((doc) => {
+        if (doc.data().username === username) {
+          foundUser = doc.data();
+        }
+      });
+      
+      if (!foundUser) throw new Error("User not found");
+      return { success: true, data: foundUser };
+    } catch (error) {
+      throw new Error(error.message);
+    }
   },
 
   getAllUsers: async () => {
-    const response = await api.get('/users');
-    return response.data;
+    try {
+      const querySnapshot = await getDocs(collection(db, 'users'));
+      const users = [];
+      querySnapshot.forEach((doc) => {
+        users.push(doc.data());
+      });
+      return { success: true, data: users };
+    } catch (error) {
+      throw new Error(error.message);
+    }
   },
 
-  followUser: async (userId) => {
-    const response = await api.post(`/users/${userId}/follow`);
-    return response.success;
+  followUser: async (targetUserId) => {
+    try {
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser) throw new Error("Not authenticated");
+
+      const currentUserRef = doc(db, 'users', currentUser.uid);
+      const targetUserRef = doc(db, 'users', targetUserId);
+
+      await updateDoc(currentUserRef, {
+        following: arrayUnion(targetUserId)
+      });
+
+      await updateDoc(targetUserRef, {
+        followers: arrayUnion(currentUser.uid)
+      });
+
+      return { success: true };
+    } catch (error) {
+      throw new Error(error.message);
+    }
   },
 
-  unfollowUser: async (userId) => {
-    const response = await api.post(`/users/${userId}/unfollow`);
-    return response.success;
+  unfollowUser: async (targetUserId) => {
+    try {
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser) throw new Error("Not authenticated");
+
+      const currentUserRef = doc(db, 'users', currentUser.uid);
+      const targetUserRef = doc(db, 'users', targetUserId);
+
+      await updateDoc(currentUserRef, {
+        following: arrayRemove(targetUserId)
+      });
+
+      await updateDoc(targetUserRef, {
+        followers: arrayRemove(currentUser.uid)
+      });
+
+      return { success: true };
+    } catch (error) {
+      throw new Error(error.message);
+    }
   }
 };
 

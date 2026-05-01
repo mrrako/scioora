@@ -55,7 +55,7 @@ export default function SignupPage() {
 
     try {
       const result = await signup({
-        name: formData.name,
+        fullName: formData.name,
         username: formData.username,
         email: formData.email,
         password: formData.password,
