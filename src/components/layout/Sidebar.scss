@@ -31,23 +31,19 @@
   padding: 0 1.5rem;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  justify-content: center; // Center the logo
   border-bottom: 1px solid var(--border-color);
   
-  h2 {
-    font-size: 1.5rem;
-    font-weight: 800;
-    letter-spacing: -0.04em;
-    font-family: v.$font-family-heading;
-    background: var(--accent-gradient);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  
-  .logo-icon {
-    color: v.$primary-color;
-    filter: drop-shadow(var(--shadow-glow));
+  .app-logo {
+    max-width: 140px;
+    max-height: 50px;
+    object-fit: contain;
+    filter: drop-shadow(var(--shadow-sm));
+    transition: v.$transition-bounce;
+
+    &:hover {
+      transform: scale(1.05);
+    }
   }
 }
 

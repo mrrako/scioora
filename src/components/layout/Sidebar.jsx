@@ -3,6 +3,7 @@ import { Home, BarChart2, Users, Settings, LogOut, LayoutDashboard, User, Messag
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import './Sidebar.scss';
+import logo from '../../assets/logo.png';
 
 export function Sidebar() {
   const { logout } = useAuth();
@@ -10,8 +11,7 @@ export function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
-        <LayoutDashboard className="logo-icon" />
-        <h2>SocialDash</h2>
+        <img src={logo} alt="SCIOOORA" className="app-logo" />
       </div>
       <nav className="sidebar-nav">
         <ul>
