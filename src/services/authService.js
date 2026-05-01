@@ -24,6 +24,7 @@ const authService = {
       
       const userData = {
         uid: userCredential.user.uid,
+        _id: userCredential.user.uid,
         email: userCredential.user.email,
         ...userDoc.data()
       };
@@ -46,6 +47,7 @@ const authService = {
 
       const newUser = {
         uid: userCredential.user.uid,
+        _id: userCredential.user.uid,
         email,
         username,
         fullName,
@@ -105,7 +107,7 @@ const authService = {
       });
       
       if (!foundUser) throw new Error("User not found");
-      return { success: true, data: foundUser };
+      return { success: true, data: { ...foundUser, _id: foundUser.uid } };
     } catch (error) {
       throw new Error(error.message);
     }
@@ -116,7 +118,7 @@ const authService = {
       const querySnapshot = await getDocs(collection(db, 'users'));
       const users = [];
       querySnapshot.forEach((doc) => {
-        users.push(doc.data());
+        users.push({ ...doc.data(), _id: doc.id });
       });
       return { success: true, data: users };
     } catch (error) {

@@ -7,7 +7,8 @@ import {
   where, 
   orderBy, 
   onSnapshot,
-  getDocs
+  getDocs,
+  serverTimestamp
 } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import authService from '../services/authService';
@@ -74,10 +75,20 @@ export function useMessages() {
     );
 
     const unsubscribe = onSnapshot(messagesQuery, (snapshot) => {
-      const msgs = snapshot.docs.map(doc => ({
-        _id: doc.id,
-        ...doc.data()
-      }));
+      const msgs = snapshot.docs.map(doc => {
+        const data = doc.data();
+        // Convert Firestore Timestamp to ISO string for the UI if needed
+        let createdAt = data.createdAt;
+        if (createdAt && typeof createdAt.toDate === 'function') {
+          createdAt = createdAt.toDate().toISOString();
+        }
+        
+        return {
+          _id: doc.id,
+          ...data,
+          createdAt: createdAt
+        };
+      });
       setMessages(msgs);
     });
 
@@ -94,7 +105,7 @@ export function useMessages() {
       sender: currentUser.uid,
       receiver: receiverId,
       text,
-      createdAt: new Date().toISOString()
+      createdAt: serverTimestamp()
     };
 
     try {

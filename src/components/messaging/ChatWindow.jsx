@@ -22,9 +22,15 @@ export function ChatWindow({ chat, messages, isTyping }) {
     );
   }
 
-  const formatTime = (isoString) => {
-    if (!isoString) return '';
-    return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const formatTime = (dateInput) => {
+    if (!dateInput) return '';
+    try {
+      const date = new Date(dateInput);
+      if (isNaN(date.getTime())) return '';
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch (e) {
+      return '';
+    }
   };
 
   return (

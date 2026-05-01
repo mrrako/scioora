@@ -97,8 +97,8 @@ export default function Profile() {
             }
           }} 
           onEditClick={isOwnProfile ? () => setIsEditModalOpen(true) : null}
-          isFollowing={isFollowing(profileUser._id)}
-          onFollowClick={() => toggleFollow(profileUser._id)}
+          isFollowing={isFollowing(profileUser.uid)}
+          onFollowClick={() => toggleFollow(profileUser.uid)}
           followLoading={followLoading}
           showFollowButton={!isOwnProfile}
         />

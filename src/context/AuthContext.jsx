@@ -18,6 +18,7 @@ export const AuthProvider = ({ children }) => {
           if (userDoc.exists()) {
             const userData = {
               uid: firebaseUser.uid,
+              _id: firebaseUser.uid,
               email: firebaseUser.email,
               ...userDoc.data()
             };
@@ -73,6 +74,7 @@ export const AuthProvider = ({ children }) => {
         if (userDoc.exists()) {
           const userData = {
             uid: user.uid,
+            _id: user.uid,
             email: user.email,
             ...userDoc.data()
           };
