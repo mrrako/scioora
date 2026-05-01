@@ -35,8 +35,9 @@
   border-bottom: 1px solid var(--border-color);
   
   .app-logo {
-    max-width: 140px;
-    max-height: 50px;
+    max-width: 200px;
+    max-height: 80px;
+    width: 100%;
     object-fit: contain;
     filter: drop-shadow(var(--shadow-sm));
     transition: v.$transition-bounce;
