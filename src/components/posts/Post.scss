@@ -77,12 +77,21 @@
     object-fit: cover;
     border: 2px solid var(--bg-secondary);
     box-shadow: var(--shadow-sm);
+
+    @media (max-width: 768px) {
+      width: 42px;
+      height: 42px;
+    }
   }
 
   .author-details {
     display: flex;
     flex-direction: column;
     gap: 0.1rem;
+
+    @media (max-width: 768px) {
+      gap: 0;
+    }
   }
 
   .author-name {
@@ -183,6 +192,11 @@
   line-height: 1.6;
   white-space: pre-wrap;
 
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    margin: 0.75rem 0 1rem;
+  }
+
   .hashtag {
     color: v.$primary-color;
     font-weight: 600;
@@ -220,6 +234,14 @@
   gap: 2.5rem;
   border-top: 1px solid var(--border-color);
   padding-top: 1.25rem;
+
+  @media (max-width: 768px) {
+    gap: 0;
+    justify-content: space-between;
+    padding-top: 1rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
 
   .action-btn {
     display: flex;

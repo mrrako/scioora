@@ -6,9 +6,10 @@
   margin: -1rem; 
 
   @media (max-width: 768px) {
-    height: calc(100vh - 110px);
+    height: calc(100vh - 120px); // Account for navbar and bottom nav
     margin: 0;
     width: 100%;
+    overflow: hidden;
   }
 }
 
@@ -25,10 +26,10 @@
   @media (max-width: 768px) {
     border-radius: 0;
     border: none;
-    position: fixed;
-    inset: 0;
-    top: v.$navbar-height;
-    height: calc(100vh - v.$navbar-height - 60px);
+    position: relative;
+    height: 100%;
+    inset: auto;
+    top: auto;
   }
 }
 
@@ -58,6 +59,12 @@
       top: 0;
       z-index: 2000;
       background-color: var(--bg-primary);
+      animation: slide-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
   }
+}
+
+@keyframes slide-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
 }
