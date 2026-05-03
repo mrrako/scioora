@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useLayoutEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import './CommentInput.scss';
+
+/** ~1 line initially; grows until this height then scrolls */
+const TEXTAREA_MAX_HEIGHT_PX = 160;
 
 export function CommentInput({
   onSubmit,
@@ -10,12 +13,35 @@ export function CommentInput({
 }) {
   const { user: currentUser } = useAuth();
   const [text, setText] = useState('');
+  const textareaRef = useRef(null);
+
+  useLayoutEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${Math.min(el.scrollHeight, TEXTAREA_MAX_HEIGHT_PX)}px`;
+  }, [text]);
+
+  const submitIfValid = () => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    onSubmit(trimmed);
+    setText('');
+    requestAnimationFrame(() => {
+      const el = textareaRef.current;
+      if (el) el.style.height = 'auto';
+    });
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (text.trim()) {
-      onSubmit(text.trim());
-      setText('');
+    submitIfValid();
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      submitIfValid();
     }
   };
 
@@ -35,11 +61,13 @@ export function CommentInput({
       <div className="comment-input-row">
         <img src={avatarSrc} alt="" className="comment-avatar" />
         <div className="input-wrapper">
-          <input 
-            type="text" 
-            placeholder={placeholder} 
+          <textarea
+            ref={textareaRef}
+            rows={1}
+            placeholder={placeholder}
             value={text}
             onChange={(e) => setText(e.target.value)}
+            onKeyDown={handleKeyDown}
             autoFocus={autoFocus}
           />
           <button type="submit" disabled={!text.trim()}>Post</button>
