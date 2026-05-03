@@ -9,7 +9,7 @@
   height: 100vh;
   background-color: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
-  z-index: 1000;
+  z-index: 5000;
   @include m.flex-center;
   animation: fadeIn 0.2s ease;
 }
