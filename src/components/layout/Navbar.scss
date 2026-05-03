@@ -160,6 +160,18 @@
   }
 }
 
+.icon-btn.message-btn, .icon-btn.mobile-search-btn {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .icon-btn.mobile-search-btn {
+    display: flex;
+  }
+}
+
 .icon-btn.message-btn {
-  display: none; // Already in BottomNav
+  @include m.respond-to('md') {
+    display: flex;
+  }
 }

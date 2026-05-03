@@ -91,6 +91,10 @@ export function Navbar() {
           {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
         </button>
 
+        <Link to="/search" className="icon-btn mobile-search-btn" aria-label="Search">
+          <SearchIcon size={20} />
+        </Link>
+
         <Link to="/messages" className="icon-btn message-btn" aria-label="Messages">
           <MessageSquare size={20} />
           {messageUnreadCount > 0 && <span className="badge message-badge">{messageUnreadCount}</span>}
