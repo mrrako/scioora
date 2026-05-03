@@ -18,7 +18,17 @@
   }
 
   @media (max-width: 768px) {
-    display: none;
+    padding: 1.25rem;
+    border-radius: v.$radius-lg;
+    
+    .composer-avatar {
+      width: 40px;
+      height: 40px;
+    }
+    
+    .composer-input-area textarea {
+      font-size: 1rem;
+    }
   }
 }
 
