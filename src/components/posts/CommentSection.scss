@@ -5,10 +5,13 @@
   border-top: 1px solid var(--border-color);
   padding-top: 1rem;
   margin-top: 1rem;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .comments-list {
   margin-top: 1rem;
+  min-width: 0;
 
   .no-comments {
     color: var(--text-muted);

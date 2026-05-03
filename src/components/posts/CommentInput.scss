@@ -73,6 +73,8 @@
       line-height: 1.45;
       resize: none;
       overflow-y: auto;
+      overflow-wrap: anywhere;
+      word-break: break-word;
       padding: 0.35rem 0 0.35rem 0.15rem;
 
       &::placeholder {

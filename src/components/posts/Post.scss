@@ -12,6 +12,8 @@
   transition: v.$transition-bounce;
   position: relative;
   overflow: visible;
+  min-width: 0;
+  max-width: 100%;
 
   &:hover {
     @include m.respond-to('md') {
@@ -191,6 +193,9 @@
   font-size: 1.1rem;
   line-height: 1.6;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
 
   @media (max-width: 768px) {
     font-size: 1rem;
