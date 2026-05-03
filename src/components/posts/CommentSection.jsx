@@ -10,18 +10,29 @@ export function CommentSection({ postId, onAddComment, onDeleteComment }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    queueMicrotask(() => setLoading(true));
+    setLoading(true);
+    // Fetch all comments for this post without server-side ordering to avoid index requirements
     const commentsQuery = query(
       collection(db, 'comments'),
-      where('postId', '==', postId),
-      orderBy('createdAt', 'asc')
+      where('postId', '==', postId)
     );
 
     const unsubscribe = onSnapshot(commentsQuery, (snapshot) => {
-      const fetchedComments = snapshot.docs.map(doc => ({
-        _id: doc.id,
-        ...doc.data()
-      }));
+      const fetchedComments = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          _id: doc.id,
+          ...data
+        };
+      });
+
+      // Sort client-side: newest first
+      fetchedComments.sort((a, b) => {
+        const timeA = a.createdAt?.seconds || 0;
+        const timeB = b.createdAt?.seconds || 0;
+        return timeB - timeA;
+      });
+
       setComments(fetchedComments);
       setLoading(false);
     }, (error) => {
@@ -33,10 +44,8 @@ export function CommentSection({ postId, onAddComment, onDeleteComment }) {
   }, [postId]);
 
   const handleTopLevelSubmit = async (text) => {
-    const newComment = await onAddComment(postId, text);
-    if (newComment) {
-      setComments((prev) => [newComment, ...prev]);
-    }
+    await onAddComment(postId, text);
+    // onSnapshot will handle the state update automatically
   };
 
   const handleDelete = async (commentId) => {

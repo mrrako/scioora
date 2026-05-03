@@ -33,7 +33,7 @@ export function usePosts() {
 
   useEffect(() => {
     if (!currentUser) return;
-    queueMicrotask(() => setLoading(true));
+    setLoading(true);
 
     const postsQuery = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
     
