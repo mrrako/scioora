@@ -10,6 +10,8 @@ import { NotificationDropdown } from './NotificationDropdown';
 import { SearchResultsDropdown } from '../search/SearchResultsDropdown';
 import './Navbar.scss';
 
+import logo from '../../assets/logo.png';
+
 export function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
@@ -58,6 +60,12 @@ export function Navbar() {
 
   return (
     <header className="navbar">
+      <div className="navbar-brand-mobile">
+        <Link to="/">
+          <img src={logo} alt="SCIOOORA" />
+        </Link>
+      </div>
+
       <div className="navbar-search" ref={searchRef}>
         <SearchIcon className="search-icon" size={20} />
         <input 

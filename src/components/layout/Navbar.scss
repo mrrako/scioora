@@ -14,13 +14,36 @@
   @include m.flex-between;
   transition: v.$transition-slow;
 
+  @media (max-width: 768px) {
+    padding: 0 1rem;
+    height: 60px;
+  }
+
   // Add a very subtle bottom shadow
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+}
+
+.navbar-brand-mobile {
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+    
+    img {
+      height: 32px;
+      width: auto;
+      object-fit: contain;
+    }
+  }
 }
 
 .navbar-search {
   position: relative;
   width: 350px;
+
+  @media (max-width: 768px) {
+    display: none; // Search will be on its own page on mobile
+  }
 
   .search-icon {
     position: absolute;
@@ -98,54 +121,24 @@
 }
 
 .user-profile {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.5rem 1rem;
-  border-radius: v.$radius-full;
-  transition: v.$transition-bounce;
-  background: var(--bg-tertiary);
-
+  background: transparent;
+  padding: 0;
+  
   &:hover {
-    background: var(--bg-secondary);
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
+    box-shadow: none;
+    transform: none;
+  }
+
+  .user-name, .logout-btn {
+    display: none;
   }
 
   .avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: var(--border-color);
-    border: 2px solid white;
-    box-shadow: var(--shadow-sm);
-    overflow: hidden;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+    width: 35px;
+    height: 35px;
   }
+}
 
-  .user-info-text {
-    display: none;
-    @include m.respond-to('lg') {
-      display: block;
-    }
-
-    .user-name {
-      font-weight: 600;
-      color: var(--text-primary);
-      font-size: 0.95rem;
-      display: block;
-      line-height: 1;
-    }
-    
-    .user-role {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      margin-top: 0.2rem;
-    }
-  }
+.icon-btn.message-btn {
+  display: none; // Already in BottomNav
 }

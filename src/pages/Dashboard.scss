@@ -24,6 +24,10 @@
   color: var(--text-primary);
   margin-bottom: 0.5rem;
   letter-spacing: -0.025em;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 }
 
 .right-sidebar {

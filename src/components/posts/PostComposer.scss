@@ -16,6 +16,10 @@
     border-color: v.$primary-color;
     transform: translateY(-2px);
   }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 }
 
 .composer-top {

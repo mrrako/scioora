@@ -9,6 +9,17 @@
   margin-bottom: 2rem;
   box-shadow: var(--shadow-md);
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    margin: 0 -0.75rem 1.5rem; // Negative margin to hit edges
+    padding: 1rem 0.75rem;
+    background-color: transparent;
+    box-shadow: none;
+    border-bottom: 1px solid var(--border-color);
+  }
 }
 
 .story-bar {
@@ -17,9 +28,14 @@
   overflow-x: auto;
   padding: 0.25rem 0.25rem 0.5rem;
   scrollbar-width: none; // Hide scrollbar for cleaner look
+  -webkit-overflow-scrolling: touch;
   
   &::-webkit-scrollbar {
     display: none;
+  }
+
+  @media (max-width: 768px) {
+    gap: 1rem;
   }
 }
 
@@ -76,6 +92,11 @@
       object-fit: cover;
       border: 3px solid var(--bg-secondary);
       background-color: var(--bg-tertiary);
+
+      @media (max-width: 768px) {
+        width: 56px;
+        height: 56px;
+      }
     }
 
     &.has-story {

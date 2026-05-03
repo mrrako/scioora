@@ -14,9 +14,33 @@
   overflow: visible;
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-xl);
-    border-color: var(--border-hover);
+    @include m.respond-to('md') {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-xl);
+      border-color: var(--border-hover);
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    margin-bottom: 0.5rem;
+    box-shadow: none;
+    
+    // Slight gap between posts
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -0.5rem;
+      left: 0;
+      right: 0;
+      height: 0.5rem;
+      background-color: var(--bg-tertiary);
+      border-top: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+    }
   }
 }
 
