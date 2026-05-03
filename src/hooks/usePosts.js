@@ -14,6 +14,7 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
+import { parseFirestoreDate } from '../utils/firestoreDate';
 
 export const countComments = (comments) => {
   if (!comments || !Array.isArray(comments)) return 0;
@@ -37,10 +38,15 @@ export function usePosts() {
     const postsQuery = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
     
     const unsubscribe = onSnapshot(postsQuery, (snapshot) => {
-      const postsData = snapshot.docs.map(doc => ({
-        _id: doc.id,
-        ...doc.data()
-      }));
+      const postsData = snapshot.docs.map((fireDoc) => {
+        const data = fireDoc.data();
+        const created = parseFirestoreDate(data.createdAt);
+        return {
+          _id: fireDoc.id,
+          ...data,
+          createdAt: created ? created.toISOString() : data.createdAt,
+        };
+      });
       setPosts(postsData);
       setLoading(false);
     }, (error) => {

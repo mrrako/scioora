@@ -3,15 +3,11 @@ import { CommentInput } from './CommentInput';
 import { Trash2, CornerDownRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import './Comment.scss';
+import { formatFirestoreDate } from '../../utils/firestoreDate';
 
 export function Comment({ comment, postId, onReply, onDelete, depth = 0 }) {
   const { user: currentUser } = useAuth();
   const [showReplyInput, setShowReplyInput] = useState(false);
-
-  const formatTimestamp = (isoString) => {
-    const date = new Date(isoString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-  };
 
   const handleReplySubmit = (text) => {
     onReply(text, comment._id);
@@ -33,7 +29,7 @@ export function Comment({ comment, postId, onReply, onDelete, depth = 0 }) {
           <div className="comment-bubble">
             <div className="comment-header">
               <span className="author-name">{comment.user?.name}</span>
-              <span className="timestamp">{formatTimestamp(comment.createdAt)}</span>
+              <span className="timestamp">{formatFirestoreDate(comment.createdAt) || '—'}</span>
             </div>
             <p className="comment-text">{comment.text}</p>
           </div>

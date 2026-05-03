@@ -3,6 +3,7 @@ import { MoreHorizontal, Heart, MessageCircle, Share2, Trash2, Edit2 } from 'luc
 import { CommentSection } from './CommentSection';
 import { useAuth } from '../../context/AuthContext';
 import './Post.scss';
+import { formatFirestoreDate } from '../../utils/firestoreDate';
 
 export const Post = memo(({ post, onDelete, onEdit, onLike, onAddComment, onDeleteComment }) => {
   const { user: currentUser } = useAuth();
@@ -13,10 +14,7 @@ export const Post = memo(({ post, onDelete, onEdit, onLike, onAddComment, onDele
 
   const authorData = post.user;
 
-  const formatTimestamp = (isoString) => {
-    const date = new Date(isoString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-  };
+  const formattedTime = formatFirestoreDate(post.createdAt);
 
   const renderContentWithHashtags = (text) => {
     if (typeof text !== 'string') return text;
@@ -35,7 +33,7 @@ export const Post = memo(({ post, onDelete, onEdit, onLike, onAddComment, onDele
     setIsEditing(false);
   };
 
-  const isLiked = post.likes.includes(currentUser?._id);
+  const isLiked = Array.isArray(post.likes) && post.likes.includes(currentUser?._id);
   const isOwner = currentUser?._id === authorData?._id;
 
   return (
@@ -47,7 +45,7 @@ export const Post = memo(({ post, onDelete, onEdit, onLike, onAddComment, onDele
             <h4 className="author-name">{authorData?.name}</h4>
             <span className="author-username">@{authorData?.username}</span>
             <span className="dot-separator">·</span>
-            <span className="post-time">{formatTimestamp(post.createdAt)}</span>
+            <span className="post-time">{formattedTime || '—'}</span>
           </div>
         </div>
         
@@ -108,7 +106,7 @@ export const Post = memo(({ post, onDelete, onEdit, onLike, onAddComment, onDele
           onClick={() => onLike(post._id)}
         >
           <Heart size={18} fill={isLiked ? 'currentColor' : 'none'} />
-          <span>{post.likes.length}</span>
+          <span>{Array.isArray(post.likes) ? post.likes.length : 0}</span>
         </button>
         <button className="action-btn">
           <Share2 size={18} />

@@ -10,6 +10,7 @@ import { EditProfileModal } from '../components/profile/EditProfileModal';
 import { useStories } from '../hooks/useStories';
 import { PostList } from '../components/posts/PostList';
 import { usePosts } from '../hooks/usePosts'; // needed for some base functions if PostList expects them
+import { parseFirestoreDate } from '../utils/firestoreDate';
 import './Profile.scss';
 
 export default function Profile() {
@@ -43,10 +44,22 @@ export default function Profile() {
         // Fetch User Posts
         const postsQuery = query(collection(db, 'posts'), where('user._id', '==', userData.uid));
         const postsSnapshot = await getDocs(postsQuery);
-        const postsData = postsSnapshot.docs.map(doc => ({ _id: doc.id, ...doc.data() }));
-        
+        const postsData = postsSnapshot.docs.map((docSnap) => {
+          const data = docSnap.data();
+          const created = parseFirestoreDate(data.createdAt);
+          return {
+            _id: docSnap.id,
+            ...data,
+            createdAt: created ? created.toISOString() : data.createdAt,
+          };
+        });
+
         // Sort manually by createdAt since Firestore requires a composite index for where + orderBy
-        postsData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        postsData.sort((a, b) => {
+          const timeA = parseFirestoreDate(a.createdAt)?.getTime() ?? 0;
+          const timeB = parseFirestoreDate(b.createdAt)?.getTime() ?? 0;
+          return timeB - timeA;
+        });
         setUserPosts(postsData);
       } catch (error) {
         console.error('Error fetching profile:', error);
