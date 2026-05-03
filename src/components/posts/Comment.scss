@@ -33,6 +33,31 @@
   min-width: 200px;
   max-width: 100%;
 
+  .reply-to-line {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.45rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+
+    .reply-to-icon {
+      flex-shrink: 0;
+      color: v.$primary-color;
+      opacity: 0.85;
+    }
+
+    .reply-to-text {
+      line-height: 1.3;
+    }
+
+    .reply-to-mention {
+      font-weight: 600;
+      color: v.$primary-color;
+    }
+  }
+
   .comment-header {
     display: flex;
     align-items: center;

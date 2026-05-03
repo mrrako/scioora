@@ -17,12 +17,13 @@ export default function SearchPage() {
   const [localQuery, setLocalQuery] = useState(urlQuery);
   
   const { posts: allPosts, deletePost, editPost, toggleLike, addComment, deleteComment } = usePosts();
-  const { query: searchQuery, setQuery: setSearchQuery, results: searchResults } = useSearch();
+  const { setQuery: setSearchQuery, results: searchResults } = useSearch();
 
   useEffect(() => {
-    setLocalQuery(urlQuery);
-    // When URL query changes, also update the search hook query to fetch users
-    setSearchQuery(urlQuery);
+    queueMicrotask(() => {
+      setLocalQuery(urlQuery);
+      setSearchQuery(urlQuery);
+    });
   }, [urlQuery, setSearchQuery]);
 
   const handleSearch = (e) => {

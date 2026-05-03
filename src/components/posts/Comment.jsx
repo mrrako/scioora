@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import './Comment.scss';
 import { formatFirestoreDate } from '../../utils/firestoreDate';
 
-export function Comment({ comment, postId, onReply, onDelete, depth = 0 }) {
+export function Comment({ comment, postId, onReply, onDelete, depth = 0, parentAuthor }) {
   const { user: currentUser } = useAuth();
   const [showReplyInput, setShowReplyInput] = useState(false);
 
@@ -15,6 +15,7 @@ export function Comment({ comment, postId, onReply, onDelete, depth = 0 }) {
   };
 
   const isOwner = currentUser?._id === comment.user?._id;
+  const replyTargetHandle = parentAuthor?.username || parentAuthor?.name;
 
   return (
     <div className={`comment-thread depth-${depth}`}>
@@ -27,6 +28,15 @@ export function Comment({ comment, postId, onReply, onDelete, depth = 0 }) {
         
         <div className="comment-content-wrapper">
           <div className="comment-bubble">
+            {parentAuthor && replyTargetHandle && (
+              <div className="reply-to-line">
+                <CornerDownRight size={14} className="reply-to-icon" aria-hidden />
+                <span className="reply-to-text">
+                  Replying to{' '}
+                  <span className="reply-to-mention">@{replyTargetHandle}</span>
+                </span>
+              </div>
+            )}
             <div className="comment-header">
               <span className="author-name">{comment.user?.name}</span>
               <span className="timestamp">{formatFirestoreDate(comment.createdAt) || '—'}</span>
@@ -47,7 +57,12 @@ export function Comment({ comment, postId, onReply, onDelete, depth = 0 }) {
 
           {showReplyInput && (
             <div className="reply-input-container">
-              <CommentInput onSubmit={handleReplySubmit} autoFocus placeholder="Write a reply..." />
+              <CommentInput
+                onSubmit={handleReplySubmit}
+                autoFocus
+                placeholder="Write a reply..."
+                replyTarget={comment.user}
+              />
             </div>
           )}
 
@@ -61,6 +76,7 @@ export function Comment({ comment, postId, onReply, onDelete, depth = 0 }) {
                   onReply={onReply}
                   onDelete={onDelete}
                   depth={depth + 1}
+                  parentAuthor={comment.user}
                 />
               ))}
             </div>

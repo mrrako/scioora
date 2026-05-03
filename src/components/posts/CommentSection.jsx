@@ -1,16 +1,49 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Comment } from './Comment';
 import { CommentInput } from './CommentInput';
 import { db } from '../../config/firebase';
-import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { parseFirestoreDate } from '../../utils/firestoreDate';
 import './CommentSection.scss';
+
+function getCommentTime(c) {
+  const parsed = parseFirestoreDate(c.createdAt);
+  if (parsed) return parsed.getTime();
+  if (typeof c.createdAt?.seconds === 'number') return c.createdAt.seconds * 1000;
+  return 0;
+}
+
+/** Nest flat Firestore comments by parentId for threaded UI */
+function buildCommentTree(flat) {
+  if (!flat?.length) return [];
+  const nodes = new Map();
+  for (const raw of flat) {
+    nodes.set(raw._id, { ...raw, replies: [] });
+  }
+  const roots = [];
+  for (const node of nodes.values()) {
+    const pid = node.parentId;
+    if (pid && nodes.has(pid)) {
+      nodes.get(pid).replies.push(node);
+    } else {
+      roots.push(node);
+    }
+  }
+  roots.sort((a, b) => getCommentTime(b) - getCommentTime(a));
+  for (const node of nodes.values()) {
+    node.replies.sort((a, b) => getCommentTime(a) - getCommentTime(b));
+  }
+  return roots;
+}
 
 export function CommentSection({ postId, onAddComment, onDeleteComment }) {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const threadedComments = useMemo(() => buildCommentTree(comments), [comments]);
+
   useEffect(() => {
-    setLoading(true);
+    queueMicrotask(() => setLoading(true));
     // Fetch all comments for this post without server-side ordering to avoid index requirements
     const commentsQuery = query(
       collection(db, 'comments'),
@@ -26,12 +59,8 @@ export function CommentSection({ postId, onAddComment, onDeleteComment }) {
         };
       });
 
-      // Sort client-side: newest first
-      fetchedComments.sort((a, b) => {
-        const timeA = a.createdAt?.seconds || 0;
-        const timeB = b.createdAt?.seconds || 0;
-        return timeB - timeA;
-      });
+      // Sort roots merge order before tree build happens in useMemo
+      fetchedComments.sort((a, b) => getCommentTime(b) - getCommentTime(a));
 
       setComments(fetchedComments);
       setLoading(false);
@@ -69,8 +98,8 @@ export function CommentSection({ postId, onAddComment, onDeleteComment }) {
       <div className="comments-list">
         {loading ? (
           <p className="loading-comments">Loading comments...</p>
-        ) : comments && comments.length > 0 ? (
-          comments.map(comment => (
+        ) : threadedComments.length > 0 ? (
+          threadedComments.map(comment => (
             <Comment 
               key={comment._id} 
               comment={comment} 

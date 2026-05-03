@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import './CommentInput.scss';
 
-export function CommentInput({ onSubmit, placeholder = "Write a comment...", autoFocus = false }) {
+export function CommentInput({
+  onSubmit,
+  placeholder = 'Write a comment...',
+  autoFocus = false,
+  replyTarget,
+}) {
+  const { user: currentUser } = useAuth();
   const [text, setText] = useState('');
 
   const handleSubmit = (e) => {
@@ -12,22 +19,31 @@ export function CommentInput({ onSubmit, placeholder = "Write a comment...", aut
     }
   };
 
+  const mention = replyTarget?.username || replyTarget?.name;
+  const avatarSrc =
+    currentUser?.avatar ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser?.username || 'User')}&background=random`;
+
   return (
-    <form className="comment-input-form" onSubmit={handleSubmit}>
-      <img 
-        src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80" 
-        alt="Avatar" 
-        className="comment-avatar"
-      />
-      <div className="input-wrapper">
-        <input 
-          type="text" 
-          placeholder={placeholder} 
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          autoFocus={autoFocus}
-        />
-        <button type="submit" disabled={!text.trim()}>Post</button>
+    <form className={`comment-input-form ${replyTarget ? 'has-reply-target' : ''}`} onSubmit={handleSubmit}>
+      {replyTarget && mention && (
+        <div className="reply-context-bar">
+          <span className="reply-context-label">Replying to</span>
+          <span className="reply-context-mention">@{mention}</span>
+        </div>
+      )}
+      <div className="comment-input-row">
+        <img src={avatarSrc} alt="" className="comment-avatar" />
+        <div className="input-wrapper">
+          <input 
+            type="text" 
+            placeholder={placeholder} 
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            autoFocus={autoFocus}
+          />
+          <button type="submit" disabled={!text.trim()}>Post</button>
+        </div>
       </div>
     </form>
   );
