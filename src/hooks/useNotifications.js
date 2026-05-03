@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { db } from '../config/firebase';
 import { 
   collection, 
@@ -20,8 +20,8 @@ export function useNotifications() {
 
   useEffect(() => {
     if (!currentUser) return;
-    
-    setLoading(true);
+
+    queueMicrotask(() => setLoading(true));
     const notificationsQuery = query(
       collection(db, 'notifications'),
       where('recipientId', '==', currentUser.uid),
@@ -82,6 +82,25 @@ export function useNotifications() {
     }
   };
 
+  const clearAll = async () => {
+    if (!currentUser) return;
+    try {
+      const allQuery = query(
+        collection(db, 'notifications'),
+        where('recipientId', '==', currentUser.uid)
+      );
+      const snapshot = await getDocs(allQuery);
+      const docs = snapshot.docs;
+      for (let i = 0; i < docs.length; i += 500) {
+        const batch = writeBatch(db);
+        docs.slice(i, i + 500).forEach((d) => batch.delete(d.ref));
+        await batch.commit();
+      }
+    } catch (error) {
+      console.error('Error clearing notifications:', error);
+    }
+  };
+
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return {
@@ -90,6 +109,7 @@ export function useNotifications() {
     loading,
     markAsRead,
     markAllAsRead,
+    clearAll,
     refreshNotifications: () => {}, // onSnapshot handles this
   };
 }

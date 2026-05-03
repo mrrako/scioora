@@ -68,7 +68,7 @@ export default function SignupPage() {
         const message = result.errors ? result.errors[0].msg : result.message;
         setError(message || 'Registration failed');
       }
-    } catch (err) {
+    } catch {
       setError('Registration failed. Please try again.');
     } finally {
       setIsLoading(false);

@@ -11,14 +11,16 @@ export function EditProfileModal({ isOpen, onClose, initialData, onSave }) {
   });
 
   useEffect(() => {
-    if (isOpen) {
+    if (!isOpen) return;
+    const id = requestAnimationFrame(() => {
       setFormData(initialData);
       setPreviews({
         avatar: initialData.avatar,
         banner: initialData.banner
       });
       setErrors({});
-    }
+    });
+    return () => cancelAnimationFrame(id);
   }, [isOpen, initialData]);
 
   const handleChange = (e) => {

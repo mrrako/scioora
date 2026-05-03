@@ -13,8 +13,10 @@ import LoginPage from './pages/auth/LoginPage';
 import SignupPage from './pages/auth/SignupPage';
 import { AnimatePresence, motion } from 'framer-motion';
 
+const PageMotion = motion.div;
+
 const PageWrapper = ({ children }) => (
-  <motion.div
+  <PageMotion
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, y: -10 }}
@@ -22,7 +24,7 @@ const PageWrapper = ({ children }) => (
     style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
   >
     {children}
-  </motion.div>
+  </PageMotion>
 );
 
 const AppContent = () => {

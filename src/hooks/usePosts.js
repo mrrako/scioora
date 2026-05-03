@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { db } from '../config/firebase';
 import { 
   collection, 
@@ -28,11 +28,11 @@ export function usePosts() {
   const { user: currentUser } = useAuth();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
+  const loadingMore = false;
 
   useEffect(() => {
     if (!currentUser) return;
-    setLoading(true);
+    queueMicrotask(() => setLoading(true));
 
     const postsQuery = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
     

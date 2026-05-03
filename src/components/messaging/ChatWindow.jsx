@@ -30,7 +30,7 @@ export function ChatWindow({ chat, messages, isTyping, onBack }) {
       const date = new Date(dateInput);
       if (isNaN(date.getTime())) return '';
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } catch (e) {
+    } catch {
       return '';
     }
   };
@@ -62,13 +62,13 @@ export function ChatWindow({ chat, messages, isTyping, onBack }) {
       </div>
 
       <div className="chat-messages" ref={scrollRef}>
-        {messages && messages.map((msg) => {
+        {messages && messages.map((msg, index) => {
           // Backend returns msg.sender as an object (populated) or an ID string
           const senderId = msg.sender?._id || msg.sender;
           const isMe = senderId === currentUser?._id;
 
           return (
-            <div key={msg._id || Math.random().toString()} className={`message-wrapper ${isMe ? 'sent' : 'received'}`}>
+            <div key={msg._id || `msg-${index}-${String(msg.createdAt)}`} className={`message-wrapper ${isMe ? 'sent' : 'received'}`}>
               {!isMe && (
                 <img 
                   src={chat.user?.avatar || `https://ui-avatars.com/api/?name=${chat.user?.username}&background=random`} 

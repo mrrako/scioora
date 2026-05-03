@@ -100,6 +100,8 @@ export const AuthProvider = ({ children }) => {
   return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };
 
+// Fast refresh expects component-only exports; hook is intentionally co-located.
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

@@ -1,5 +1,4 @@
 import React, { useState, useRef } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { Image as ImageIcon, Smile, X } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
 import { useAuth } from '../../context/AuthContext';

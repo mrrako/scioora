@@ -52,7 +52,9 @@ export function useMessages() {
   }, [currentUser]);
 
   useEffect(() => {
-    fetchChats();
+    queueMicrotask(() => {
+      void fetchChats();
+    });
   }, [fetchChats]);
 
   const fetchMessages = useCallback((receiverId) => {

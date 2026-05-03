@@ -1,10 +1,9 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { Hash, User, Search as SearchIcon } from 'lucide-react';
+import { Search as SearchIcon } from 'lucide-react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { Post } from '../components/posts/Post';
 import { usePosts } from '../hooks/usePosts';
-import { useSearch } from '../hooks/useSearch';
 import { TrendingSection } from '../components/search/TrendingSection';
 import './SearchPage.scss';
 
@@ -14,14 +13,13 @@ export default function SearchPage() {
   const searchParams = new URLSearchParams(location.search);
   const urlQuery = searchParams.get('q') || '';
   
-  const { query: searchQuery, setQuery: setSearchQuery } = useSearch();
   const [localQuery, setLocalQuery] = useState(urlQuery);
   
   const [allPosts] = useLocalStorage('social-dash-posts', []);
   const { deletePost, editPost, toggleLike, addComment, deleteComment } = usePosts();
 
   useEffect(() => {
-    setLocalQuery(urlQuery);
+    queueMicrotask(() => setLocalQuery(urlQuery));
   }, [urlQuery]);
 
   const handleSearch = (e) => {

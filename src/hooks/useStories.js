@@ -6,7 +6,6 @@ import {
   onSnapshot,
   doc,
   setDoc,
-  getDocs,
   getDoc
 } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';

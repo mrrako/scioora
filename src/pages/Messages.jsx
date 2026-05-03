@@ -6,15 +6,12 @@ import { useMessages } from '../hooks/useMessages';
 import './Messages.scss';
 
 export default function Messages() {
-  const { chats, messages, sendMessage, fetchMessages, activeChatId } = useMessages();
-  const [selectedChatId, setSelectedChatId] = useState(null);
+  const { chats, messages, sendMessage, fetchMessages } = useMessages();
+  /** undefined = auto-select first chat; null = user cleared selection */
+  const [selection, setSelection] = useState(undefined);
 
-  // If chats load and none selected, optionally select the first
-  useEffect(() => {
-    if (chats.length > 0 && !selectedChatId) {
-      setSelectedChatId(chats[0].id);
-    }
-  }, [chats, selectedChatId]);
+  const selectedChatId =
+    selection === undefined ? (chats[0]?.id ?? null) : selection;
 
   // When a chat is selected, fetch its messages
   useEffect(() => {
@@ -26,7 +23,7 @@ export default function Messages() {
   const activeChat = chats.find(c => c.id === selectedChatId);
 
   const handleSelectChat = (id) => {
-    setSelectedChatId(id);
+    setSelection(id);
   };
 
   const handleSendMessage = (text) => {
@@ -48,7 +45,7 @@ export default function Messages() {
             chat={activeChat} 
             messages={messages} 
             isTyping={false}
-            onBack={() => setSelectedChatId(null)}
+            onBack={() => setSelection(null)}
           />
           {selectedChatId && (
             <MessageInput onSendMessage={handleSendMessage} />

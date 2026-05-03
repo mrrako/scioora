@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Comment } from './Comment';
 import { CommentInput } from './CommentInput';
 import { db } from '../../config/firebase';
@@ -10,7 +10,7 @@ export function CommentSection({ postId, onAddComment, onDeleteComment }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
+    queueMicrotask(() => setLoading(true));
     const commentsQuery = query(
       collection(db, 'comments'),
       where('postId', '==', postId),

@@ -88,8 +88,8 @@
   }
 }
 
-// Adjust main content padding for floating bottom nav
-:global(.page-content) {
+// Adjust main content padding for floating bottom nav (global class from layout)
+.page-content {
   @media (max-width: 768px) {
     padding-bottom: 100px !important;
   }

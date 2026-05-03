@@ -21,7 +21,7 @@ export function StoryViewer({ stories, initialUserIndex, onClose, onToggleHighli
     } else {
       onClose();
     }
-  }, [currentItemIndex, currentUserIndex, stories, onClose]);
+  }, [currentItemIndex, currentUserIndex, stories, onClose, currentUser.items.length]);
 
   const handlePrev = useCallback(() => {
     if (currentItemIndex > 0) {

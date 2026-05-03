@@ -2,6 +2,9 @@ import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Post } from './Post';
 
+const ListMotion = motion.div;
+const ItemMotion = motion.div;
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -65,15 +68,15 @@ export function PostList({
   }
 
   return (
-    <motion.div 
+    <ListMotion 
       className="post-list"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
       <AnimatePresence mode="popLayout">
-        {posts.map((post) => (
-          <motion.div key={post._id || Math.random()} variants={itemVariants} layout>
+        {posts.map((post, index) => (
+          <ItemMotion key={post._id || `post-${index}`} variants={itemVariants} layout>
             <Post 
               post={post} 
               onDelete={onDeletePost}
@@ -82,7 +85,7 @@ export function PostList({
               onAddComment={onAddComment}
               onDeleteComment={onDeleteComment}
             />
-          </motion.div>
+          </ItemMotion>
         ))}
       </AnimatePresence>
 
@@ -100,6 +103,6 @@ export function PostList({
           <p>You've caught up! No more posts to show.</p>
         </div>
       )}
-    </motion.div>
+    </ListMotion>
   );
 }

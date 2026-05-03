@@ -16,6 +16,10 @@
   position: relative;
   background-color: var(--bg-tertiary);
 
+  @include m.respond-to('lg') {
+    height: 132px;
+  }
+
   .edit-overlay {
     position: absolute;
     inset: 0;
@@ -42,6 +46,10 @@
 
 .profile-info-container {
   padding: 0 1.5rem 1.5rem;
+
+  @include m.respond-to('lg') {
+    padding: 0 1.5rem 1.25rem;
+  }
 }
 
 .profile-header {
@@ -50,18 +58,36 @@
   align-items: flex-end;
   margin-top: -4rem;
   margin-bottom: 1rem;
+
+  @include m.respond-to('lg') {
+    margin-top: -2.125rem;
+    margin-bottom: 0.625rem;
+  }
 }
 
 .profile-picture-wrapper {
   position: relative;
+  flex-shrink: 0;
   
   .profile-picture {
+    display: block;
     width: 120px;
     height: 120px;
+    max-width: 120px;
+    max-height: 120px;
     border-radius: 50%;
     border: 4px solid var(--bg-secondary);
     background-color: var(--bg-tertiary);
     object-fit: cover;
+    box-sizing: border-box;
+
+    @include m.respond-to('lg') {
+      width: 80px;
+      height: 80px;
+      max-width: 80px;
+      max-height: 80px;
+      border-width: 3px;
+    }
   }
 
   .edit-avatar-btn {
@@ -75,6 +101,17 @@
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
     transition: all 0.2s ease;
+
+    @include m.respond-to('lg') {
+      bottom: 0.2rem;
+      right: 0.2rem;
+      padding: 0.3rem;
+
+      svg {
+        width: 14px;
+        height: 14px;
+      }
+    }
 
     &:hover {
       background-color: var(--bg-tertiary);
@@ -92,6 +129,12 @@
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   margin-bottom: 0.5rem;
   font-size: 0.95rem;
+
+  @include m.respond-to('lg') {
+    padding: 0.45rem 1.15rem;
+    font-size: 0.875rem;
+    margin-bottom: 0.2rem;
+  }
 
   &:hover {
     background-color: var(--bg-tertiary);
@@ -124,11 +167,17 @@
 }
 
 .profile-details {
+  min-width: 0;
+
   .profile-name {
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--text-primary);
     margin-bottom: 0.1rem;
+
+    @include m.respond-to('lg') {
+      font-size: 1.22rem;
+    }
   }
 
   .profile-username {
@@ -136,12 +185,21 @@
     font-size: 0.95rem;
     display: block;
     margin-bottom: 1rem;
+
+    @include m.respond-to('lg') {
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+    }
   }
 
   .profile-bio {
     color: var(--text-secondary);
     margin-bottom: 1rem;
     line-height: 1.5;
+
+    @include m.respond-to('lg') {
+      margin-bottom: 0.75rem;
+    }
   }
 }
 
@@ -171,6 +229,10 @@
   display: flex;
   gap: 2rem;
 
+  @include m.respond-to('lg') {
+    gap: 1.35rem;
+  }
+
   .stat-item {
     display: flex;
     gap: 0.4rem;
@@ -180,6 +242,10 @@
       font-weight: 700;
       color: var(--text-primary);
       font-size: 1.1rem;
+
+      @include m.respond-to('lg') {
+        font-size: 1rem;
+      }
     }
 
     .stat-label {

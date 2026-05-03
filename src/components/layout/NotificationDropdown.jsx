@@ -35,6 +35,9 @@ export function NotificationDropdown({ notifications, onMarkAsRead, onMarkAllAsR
           <button className="action-btn" onClick={onMarkAllAsRead} title="Mark all as read">
             <Check size={18} />
           </button>
+          <button className="action-btn" onClick={onClearAll} title="Clear all notifications" type="button">
+            <Trash2 size={18} />
+          </button>
         </div>
       </div>
 
