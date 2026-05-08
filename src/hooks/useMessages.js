@@ -7,6 +7,7 @@ import {
   query, 
   where, 
   orderBy, 
+  limit,
   onSnapshot,
   serverTimestamp
 } from 'firebase/firestore';
@@ -23,6 +24,8 @@ export function useMessages() {
   const [chats, setChats] = useState([]);
   const [activeChatId, setActiveChatId] = useState(null);
   const unsubscribeRef = useRef(null);
+
+
 
   const fetchChats = useCallback(async (forcedUserId = null) => {
     if (!currentUser) return;
