@@ -20,9 +20,9 @@ export function TrendingSection() {
     const fetchSuggestions = async () => {
       if (!currentUser) return;
       try {
-        const allUsers = await authService.getAllUsers();
-        const suggestions = allUsers
-          .filter(u => u._id !== currentUser._id && !currentUser.following?.includes(u._id))
+        const response = await authService.getAllUsers();
+        const suggestions = (response.data || [])
+          .filter(u => u._id !== currentUser.uid && !currentUser.following?.includes(u._id))
           .slice(0, 3);
         setSuggestedUsers(suggestions);
       } catch (error) {

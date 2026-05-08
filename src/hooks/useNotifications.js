@@ -89,9 +89,7 @@ export function useNotifications(activeChatId = null) {
 
     const globalQuery = query(
       collection(db, 'messages'),
-      where('receiver', '==', currentUser.uid),
-      orderBy('createdAt', 'desc'),
-      limit(1)
+      where('receiver', '==', currentUser.uid)
     );
 
     globalUnsubscribeRef.current = onSnapshot(globalQuery, (snapshot) => {
