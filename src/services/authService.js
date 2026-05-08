@@ -15,6 +15,7 @@ import {
   arrayUnion,
   arrayRemove
 } from 'firebase/firestore';
+import notificationService from './notificationService';
 
 const authService = {
   login: async (email, password) => {
@@ -151,6 +152,15 @@ const authService = {
 
       await updateDoc(targetUserRef, {
         followers: arrayUnion(currentUser.uid)
+      });
+
+      // Create notification
+      await notificationService.createNotification({
+        recipientId: targetUserId,
+        sender: currentUser,
+        type: 'follow',
+        message: 'started following you',
+        link: `/profile/${currentUser.username}`
       });
 
       return { success: true };

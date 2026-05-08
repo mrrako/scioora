@@ -120,6 +120,8 @@
         &.like { color: v.$danger-color; }
         &.comment { color: v.$primary-color; }
         &.follow { color: v.$success-color; }
+        &.post { color: #f59e0b; } // Amber
+        &.story { color: #ec4899; } // Pink
       }
     }
   }

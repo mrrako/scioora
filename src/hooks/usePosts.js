@@ -15,6 +15,7 @@ import {
 } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import { parseFirestoreDate } from '../utils/firestoreDate';
+import notificationService from '../services/notificationService';
 
 export const countComments = (comments) => {
   if (!comments || !Array.isArray(comments)) return 0;
@@ -74,6 +75,15 @@ export function usePosts() {
       };
       
       await addDoc(collection(db, 'posts'), newPost);
+
+      // Notify followers about new post
+      await notificationService.notifyFollowers(
+        currentUser,
+        'post',
+        'shared a new post',
+        '/'
+      );
+
       return true;
     } catch (error) {
       console.error('Error adding post:', error);
@@ -119,6 +129,17 @@ export function usePosts() {
         await updateDoc(postRef, {
           likes: arrayUnion(currentUser.uid)
         });
+
+        // Notify post owner
+        if (post.user._id !== currentUser.uid) {
+          await notificationService.createNotification({
+            recipientId: post.user._id,
+            sender: currentUser,
+            type: 'like',
+            message: 'liked your post',
+            link: '/'
+          });
+        }
       }
     } catch (error) {
       console.error('Error toggling like:', error);
@@ -141,6 +162,19 @@ export function usePosts() {
         }
       };
       const docRef = await addDoc(collection(db, 'comments'), newComment);
+
+      // Notify post owner
+      const post = posts.find(p => p._id === postId);
+      if (post && post.user._id !== currentUser.uid) {
+        await notificationService.createNotification({
+          recipientId: post.user._id,
+          sender: currentUser,
+          type: 'comment',
+          message: 'commented on your post',
+          link: '/'
+        });
+      }
+
       return { _id: docRef.id, ...newComment };
     } catch (error) {
       console.error('Error adding comment:', error);

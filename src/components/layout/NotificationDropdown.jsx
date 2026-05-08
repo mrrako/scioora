@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, MessageCircle, UserPlus, Trash2, Check } from 'lucide-react';
+import { Heart, MessageCircle, UserPlus, Trash2, Check, Image, Play } from 'lucide-react';
 import './NotificationDropdown.scss';
 
 export function NotificationDropdown({ notifications, onMarkAsRead, onMarkAllAsRead, onClearAll }) {
@@ -22,6 +22,10 @@ export function NotificationDropdown({ notifications, onMarkAsRead, onMarkAllAsR
         return <MessageCircle className="type-icon comment" size={16} fill="currentColor" />;
       case 'follow':
         return <UserPlus className="type-icon follow" size={16} fill="currentColor" />;
+      case 'post':
+        return <Image className="type-icon post" size={16} fill="currentColor" />;
+      case 'story':
+        return <Play className="type-icon story" size={16} fill="currentColor" />;
       default:
         return null;
     }

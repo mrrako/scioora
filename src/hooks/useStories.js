@@ -10,6 +10,7 @@ import {
 } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '../context/AuthContext';
+import notificationService from '../services/notificationService';
 
 export function useStories() {
   const { user: currentUser } = useAuth();
@@ -100,6 +101,14 @@ export function useStories() {
           items: [newItem]
         });
       }
+
+      // Notify followers about new story
+      await notificationService.notifyFollowers(
+        currentUser,
+        'story',
+        'added to their story',
+        '/'
+      );
     } catch (error) {
       console.error('Error adding story:', error);
     }
