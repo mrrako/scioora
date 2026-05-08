@@ -1,9 +1,14 @@
-import React from 'react';
-import { MapPin, Link as LinkIcon, Calendar, Edit2 } from 'lucide-react';
+import { MapPin, Link as LinkIcon, Calendar, Edit2, MessageSquare } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import './ProfileCard.scss';
 
 export function ProfileCard({ profileData, onEditClick, onFollowClick, isFollowing, followLoading, showFollowButton }) {
-  const { name, username, bio, location, website, joinDate, stats, banner, avatar } = profileData;
+  const navigate = useNavigate();
+  const { uid, name, username, bio, location, website, joinDate, stats, banner, avatar } = profileData;
+
+  const handleMessageClick = () => {
+    navigate(`/messages?userId=${uid}`);
+  };
 
   return (
     <div className="profile-card">
@@ -37,13 +42,18 @@ export function ProfileCard({ profileData, onEditClick, onFollowClick, isFollowi
               Edit Profile
             </button>
           ) : showFollowButton ? (
-            <button 
-              className={`follow-btn ${isFollowing ? 'following' : ''}`} 
-              onClick={onFollowClick}
-              disabled={followLoading}
-            >
-              {followLoading ? '...' : isFollowing ? 'Following' : 'Follow'}
-            </button>
+            <div className="profile-actions">
+              <button 
+                className={`follow-btn ${isFollowing ? 'following' : ''}`} 
+                onClick={onFollowClick}
+                disabled={followLoading}
+              >
+                {followLoading ? '...' : isFollowing ? 'Following' : 'Follow'}
+              </button>
+              <button className="message-btn" onClick={handleMessageClick} title="Send Message">
+                <MessageSquare size={20} />
+              </button>
+            </div>
           ) : null}
         </div>
 

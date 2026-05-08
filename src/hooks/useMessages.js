@@ -3,6 +3,7 @@ import { db } from '../config/firebase';
 import { 
   collection, 
   addDoc, 
+  getDocs,
   query, 
   where, 
   orderBy, 
@@ -23,14 +24,35 @@ export function useMessages() {
   const [activeChatId, setActiveChatId] = useState(null);
   const unsubscribeRef = useRef(null);
 
-  const fetchChats = useCallback(async () => {
+  const fetchChats = useCallback(async (forcedUserId = null) => {
     if (!currentUser) return;
     try {
-      const response = await authService.getAllUsers();
-      if (response.success) {
-        const chatList = response.data
-          .filter(u => u.uid !== currentUser.uid)
-          .map(user => ({
+      // Find unique participants from messages
+      const sentQuery = query(collection(db, 'messages'), where('sender', '==', currentUser.uid));
+      const receivedQuery = query(collection(db, 'messages'), where('receiver', '==', currentUser.uid));
+      
+      const [sentSnap, receivedSnap] = await Promise.all([
+        getDocs(sentQuery),
+        getDocs(receivedQuery)
+      ]);
+
+      const participantIds = new Set();
+      sentSnap.forEach(doc => participantIds.add(doc.data().receiver));
+      receivedSnap.forEach(doc => participantIds.add(doc.data().sender));
+      
+      if (forcedUserId && forcedUserId !== currentUser.uid) {
+        participantIds.add(forcedUserId);
+      }
+
+      const chatList = [];
+      // Use Promise.all to fetch user details in parallel
+      const userPromises = Array.from(participantIds).map(uid => authService.getUserById(uid));
+      const userResponses = await Promise.all(userPromises);
+
+      userResponses.forEach(response => {
+        if (response.success) {
+          const user = response.data;
+          chatList.push({
             id: user.uid,
             user: {
               uid: user.uid,
@@ -38,14 +60,16 @@ export function useMessages() {
               name: user.fullName || user.username || 'User',
               username: user.username,
               avatar: user.avatar,
-              status: 'offline',
+              status: 'offline', // Default status
             },
-            lastMessage: 'Open to chat',
+            lastMessage: 'Click to chat',
             timestamp: new Date().toISOString(),
             unreadCount: 0,
-          }));
-        setChats(chatList);
-      }
+          });
+        }
+      });
+
+      setChats(chatList);
     } catch (error) {
       console.error('Error fetching chats:', error);
     }
@@ -130,6 +154,7 @@ export function useMessages() {
     messages,
     sendMessage,
     fetchMessages,
+    fetchChats,
     activeChatId,
     totalUnreadCount: 0
   };

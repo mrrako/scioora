@@ -113,6 +113,16 @@ const authService = {
     }
   },
 
+  getUserById: async (uid) => {
+    try {
+      const userDoc = await getDoc(doc(db, 'users', uid));
+      if (!userDoc.exists()) throw new Error("User not found");
+      return { success: true, data: { ...userDoc.data(), _id: uid } };
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  },
+
   getAllUsers: async () => {
     try {
       const querySnapshot = await getDocs(collection(db, 'users'));

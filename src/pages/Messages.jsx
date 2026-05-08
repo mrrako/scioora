@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { ChatList } from '../components/messaging/ChatList';
 import { ChatWindow } from '../components/messaging/ChatWindow';
 import { MessageInput } from '../components/messaging/MessageInput';
@@ -6,9 +7,19 @@ import { useMessages } from '../hooks/useMessages';
 import './Messages.scss';
 
 export default function Messages() {
-  const { chats, messages, sendMessage, fetchMessages } = useMessages();
+  const [searchParams] = useSearchParams();
+  const userIdFromParam = searchParams.get('userId');
+  const { chats, messages, sendMessage, fetchMessages, fetchChats } = useMessages();
   /** undefined = auto-select first chat; null = user cleared selection */
   const [selection, setSelection] = useState(undefined);
+
+  // Initial fetch with forced userId if present
+  useEffect(() => {
+    fetchChats(userIdFromParam);
+    if (userIdFromParam) {
+      setSelection(userIdFromParam);
+    }
+  }, [userIdFromParam, fetchChats]);
 
   const selectedChatId =
     selection === undefined ? (chats[0]?.id ?? null) : selection;

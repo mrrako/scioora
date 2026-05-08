@@ -166,6 +166,52 @@
   }
 }
 
+.profile-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+
+  @include m.respond-to('lg') {
+    margin-bottom: 0.2rem;
+  }
+  
+  .follow-btn {
+    margin-bottom: 0;
+  }
+}
+
+.message-btn {
+  @include m.flex-center;
+  padding: 0.6rem;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background-color: transparent;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  cursor: pointer;
+
+  @include m.respond-to('lg') {
+    padding: 0.45rem;
+  }
+
+  &:hover {
+    background-color: var(--bg-tertiary);
+    transform: translateY(-1px);
+    border-color: var(--text-primary);
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+    
+    @include m.respond-to('lg') {
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
 .profile-details {
   min-width: 0;
 
